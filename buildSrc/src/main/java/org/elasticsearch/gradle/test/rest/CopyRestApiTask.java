@@ -71,13 +71,8 @@ public class CopyRestApiTask extends DefaultTask {
     private final PatternFilterable xpackPatternSet;
 
     public CopyRestApiTask() {
-        corePatternSet = getPatternSetFactory().create();
-        xpackPatternSet = getPatternSetFactory().create();
-    }
-
-    @Inject
-    protected Factory<PatternSet> getPatternSetFactory() {
-        throw new UnsupportedOperationException();
+        corePatternSet = new PatternSet();
+        xpackPatternSet = new PatternSet();
     }
 
     @Inject

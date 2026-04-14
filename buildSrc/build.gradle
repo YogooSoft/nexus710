@@ -172,16 +172,12 @@ if (project != rootProject) {
 
   dependencies {
     reaper project('reaper')
-    distribution project(':distribution:archives:windows-zip')
-    distribution project(':distribution:archives:oss-windows-zip')
-    distribution project(':distribution:archives:darwin-tar')
     distribution project(':distribution:archives:oss-darwin-tar')
-    distribution project(':distribution:archives:linux-aarch64-tar')
-    distribution project(':distribution:archives:linux-tar')
+    distribution project(':distribution:archives:oss-darwin-aarch64-tar')
     distribution project(':distribution:archives:oss-linux-tar')
     distribution project(':distribution:archives:oss-linux-aarch64-tar')
 
-    integTestRuntimeOnly(project(":libs:elasticsearch-core"))
+    integTestRuntimeOnly(project(":libs:nexus710-core"))
   }
 
   // for external projects we want to remove the marker file indicating we are running the Elasticsearch project
@@ -249,7 +245,9 @@ if (project != rootProject) {
     generatePomFileForPluginMavenPublication.enabled = false
   }
 
-  publishing.publications.named("nebula").configure {
+  // Nebula publication replaced by standard maven-publish
+  publishing.publications.create("maven", MavenPublication) {
+    from components.java
     suppressPomMetadataWarningsFor("testFixturesApiElements")
     suppressPomMetadataWarningsFor("testFixturesRuntimeElements")
   }

@@ -19,7 +19,7 @@
 apply plugin: 'elasticsearch.publish'
 
 dependencies {
-  api project(':libs:elasticsearch-core')
+  api project(':libs:nexus710-core')
 
   testImplementation "com.carrotsearch.randomizedtesting:randomizedtesting-runner:${versions.randomizedrunner}"
   testImplementation "junit:junit:${versions.junit}"

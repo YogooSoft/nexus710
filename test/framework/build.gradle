@@ -24,9 +24,9 @@ apply plugin: 'elasticsearch.publish'
 dependencies {
   api project(":client:rest")
   api project(":client:sniffer")
-  api project(':libs:elasticsearch-nio')
+  api project(':libs:nexus710-nio')
   api project(":server")
-  api project(":libs:elasticsearch-cli")
+  api project(":libs:nexus710-cli")
   api "com.carrotsearch.randomizedtesting:randomizedtesting-runner:${versions.randomizedrunner}"
   api "junit:junit:${versions.junit}"
   api "org.hamcrest:hamcrest:${versions.hamcrest}"

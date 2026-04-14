@@ -17,7 +17,7 @@
  * under the License.
  */
 apply plugin: 'elasticsearch.build'
-apply plugin: 'nebula.maven-base-publish'
+apply plugin: 'maven-publish'
 
 group = 'org.elasticsearch.client'
 
@@ -28,7 +28,6 @@ dependencies {
   api project(":modules:lang-mustache")
   api project(":modules:percolator")
   api project(":modules:parent-join")
-  api project(":modules:rank-eval")
   testImplementation "com.carrotsearch.randomizedtesting:randomizedtesting-runner:${versions.randomizedrunner}"
   testImplementation "junit:junit:${versions.junit}"
   testImplementation "org.hamcrest:hamcrest:${versions.hamcrest}"

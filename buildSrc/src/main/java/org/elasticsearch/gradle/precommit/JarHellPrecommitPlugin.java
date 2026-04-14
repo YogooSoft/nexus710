@@ -31,11 +31,11 @@ public class JarHellPrecommitPlugin extends PrecommitPlugin {
     @Override
     public TaskProvider<? extends Task> createTask(Project project) {
         Configuration jarHellConfig = project.getConfigurations().create("jarHell");
-        if (BuildParams.isInternal() && project.getPath().equals(":libs:elasticsearch-core") == false) {
+        if (BuildParams.isInternal() && project.getPath().equals(":libs:nexus710-core") == false) {
             // External plugins will depend on this already via transitive dependencies.
             // Internal projects are not all plugins, so make sure the check is available
             // we are not doing this for this project itself to avoid jar hell with itself
-            project.getDependencies().add("jarHell", project.project(":libs:elasticsearch-core"));
+            project.getDependencies().add("jarHell", project.project(":libs:nexus710-core"));
         }
 
         TaskProvider<JarHellTask> jarHell = project.getTasks().register("jarHell", JarHellTask.class);

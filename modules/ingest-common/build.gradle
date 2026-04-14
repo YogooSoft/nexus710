@@ -27,8 +27,8 @@ esplugin {
 
 dependencies {
   compileOnly project(':modules:lang-painless')
-  api project(':libs:elasticsearch-grok')
-  api project(':libs:elasticsearch-dissect')
+  api project(':libs:nexus710-grok')
+  api project(':libs:nexus710-dissect')
 }
 
 restResources {

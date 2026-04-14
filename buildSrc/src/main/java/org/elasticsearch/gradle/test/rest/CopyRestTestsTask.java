@@ -68,13 +68,8 @@ public class CopyRestTestsTask extends DefaultTask {
     private final PatternFilterable xpackPatternSet;
 
     public CopyRestTestsTask() {
-        corePatternSet = getPatternSetFactory().create();
-        xpackPatternSet = getPatternSetFactory().create();
-    }
-
-    @Inject
-    protected Factory<PatternSet> getPatternSetFactory() {
-        throw new UnsupportedOperationException();
+        corePatternSet = new PatternSet();
+        xpackPatternSet = new PatternSet();
     }
 
     @Inject

@@ -23,6 +23,7 @@ List projects = [
   'distribution:archives:oss-linux-tar',
   'distribution:archives:oss-linux-aarch64-tar',
   'distribution:archives:oss-darwin-tar',
+  'distribution:archives:oss-darwin-aarch64-tar',
   'distribution:archives:oss-no-jdk-linux-tar',
   'distribution:archives:oss-no-jdk-darwin-tar',
   'distribution:docker',

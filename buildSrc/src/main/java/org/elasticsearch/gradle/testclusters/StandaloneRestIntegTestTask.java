@@ -49,10 +49,18 @@ import static org.elasticsearch.gradle.testclusters.TestClustersPlugin.THROTTLE_
 public class StandaloneRestIntegTestTask extends Test implements TestClustersAware, FileSystemOperationsAware {
 
     private Collection<ElasticsearchCluster> clusters = new HashSet<>();
-    private Property<Boolean> dryRun;
+    private Property<Boolean> dryRunProperty;
+
+    @Override
+    @Internal
+    public Property<Boolean> getDryRun() {
+        if (dryRunProperty == null) {
+            dryRunProperty = getProject().getObjects().property(Boolean.class).convention(false);
+        }
+        return dryRunProperty;
+    }
 
     public StandaloneRestIntegTestTask() {
-        this.dryRun = getProject().getObjects().property(Boolean.class).convention(false);
         this.getOutputs()
             .doNotCacheIf(
                 "Caching disabled for this task since it uses a cluster shared by other tasks",
@@ -75,12 +83,6 @@ public class StandaloneRestIntegTestTask extends Test implements TestClustersAwa
                 // Don't cache the output of this task if it's not running from a clean data directory.
                 t -> getClusters().stream().anyMatch(cluster -> cluster.isPreserveDataDir())
             );
-    }
-
-    @Override
-    @Internal
-    public Property<Boolean> getDryRun() {
-        return dryRun;
     }
 
     @Override

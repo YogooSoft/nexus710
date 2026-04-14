@@ -20,13 +20,13 @@ import org.elasticsearch.gradle.info.BuildParams
  */
 
 apply plugin: 'elasticsearch.build'
-apply plugin: 'nebula.optional-base'
+// nebula.optional-base removed
 apply plugin: 'elasticsearch.publish'
 apply plugin: 'elasticsearch.internal-cluster-test'
 
 publishing {
   publications {
-    nebula {
+    maven(MavenPublication) {
       artifactId 'elasticsearch'
     }
   }
@@ -76,13 +76,13 @@ if (!isEclipse) {
 
 dependencies {
 
-  api project(':libs:elasticsearch-core')
-  api project(':libs:elasticsearch-secure-sm')
-  api project(':libs:elasticsearch-x-content')
-  api project(":libs:elasticsearch-geo")
+  api project(':libs:nexus710-core')
+  api project(':libs:nexus710-secure-sm')
+  api project(':libs:nexus710-x-content')
+  api project(":libs:nexus710-geo")
 
-  compileOnly project(':libs:elasticsearch-plugin-classloader')
-  testRuntimeOnly project(':libs:elasticsearch-plugin-classloader')
+  compileOnly project(':libs:nexus710-plugin-classloader')
+  testRuntimeOnly project(':libs:nexus710-plugin-classloader')
 
   // lucene 9.x (artifact names changed from lucene-analyzers-* to lucene-analysis-*)
   api "org.apache.lucene:lucene-core:${versions.lucene}"
@@ -100,7 +100,7 @@ dependencies {
   api "org.apache.lucene:lucene-suggest:${versions.lucene}"
 
   // utilities
-  api project(":libs:elasticsearch-cli")
+  api project(":libs:nexus710-cli")
   api 'com.carrotsearch:hppc:0.8.1'
 
   // time handling, remove with java 8 time
@@ -112,12 +112,12 @@ dependencies {
   api 'org.hdrhistogram:HdrHistogram:2.1.9'
 
   // lucene spatial
-  api "org.locationtech.spatial4j:spatial4j:${versions.spatial4j}", optional
-  api "org.locationtech.jts:jts-core:${versions.jts}", optional
+  api "org.locationtech.spatial4j:spatial4j:${versions.spatial4j}"
+  api "org.locationtech.jts:jts-core:${versions.jts}"
 
   // logging
   api "org.apache.logging.log4j:log4j-api:${versions.log4j}"
-  api "org.apache.logging.log4j:log4j-core:${versions.log4j}", optional
+  api "org.apache.logging.log4j:log4j-core:${versions.log4j}"
 
   // repackaged jna with native bits linked against all elastic supported platforms
   api "org.elasticsearch:jna:${versions.jna}"
@@ -174,7 +174,6 @@ tasks.named("testingConventions").configure {
 
 def generateModulesList = tasks.register("generateModulesList") {
     List<String> modules = project(':modules').subprojects.collect { it.name }
-    modules.add('x-pack')
     File modulesFile = new File(buildDir, 'generated-resources/modules.txt')
     processResources.from(modulesFile)
     inputs.property('modules', modules)

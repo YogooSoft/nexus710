@@ -53,7 +53,7 @@ test {
 
 dependencies {
   api project(":client:rest")
-  api project(":libs:elasticsearch-ssl-config")
+  api project(":libs:nexus710-ssl-config")
   // for http - testing reindex from remote
   testImplementation project(':modules:transport-netty4')
   // for parent/child testing

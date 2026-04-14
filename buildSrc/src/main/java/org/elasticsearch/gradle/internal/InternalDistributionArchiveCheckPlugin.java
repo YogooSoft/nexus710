@@ -73,17 +73,7 @@ public class InternalDistributionArchiveCheckPlugin implements Plugin<Project> {
             task.dependsOn(checkNotice);
         });
 
-        String projectName = project.getName();
-        if (projectName.contains("oss") == false && (projectName.contains("zip") || projectName.contains("tar"))) {
-            project.getExtensions().add("licenseName", "Elastic License");
-            project.getExtensions().add("licenseUrl", project.getExtensions().getExtraProperties().get("elasticLicenseUrl"));
-            TaskProvider<Task> checkMlCppNoticeTask = registerCheckMlCppNoticeTask(
-                project,
-                checkExtraction,
-                distributionArchiveCheckExtension
-            );
-            checkTask.configure(task -> task.dependsOn(checkMlCppNoticeTask));
-        }
+        // Elastic License check removed — Nexus 710 is Apache 2.0 only
     }
 
     private File calculateArchiveExtractionDir(Project project) {

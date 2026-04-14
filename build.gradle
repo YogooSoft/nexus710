@@ -65,7 +65,7 @@ if (VersionProperties.elasticsearch.toString().endsWith('-SNAPSHOT')) {
 }
 
 configure(allprojects - project(':distribution:archives:integ-test-zip')) {
-  project.pluginManager.withPlugin('nebula.maven-base-publish') {
+  project.pluginManager.withPlugin('maven-publish') {
     if (project.pluginManager.hasPlugin('elasticsearch.build') == false) {
       throw new GradleException("Project ${path} publishes a pom but doesn't apply the build plugin.")
     }
@@ -226,10 +226,13 @@ allprojects {
         }
       }
       boolean hasShadow = project.plugins.hasPlugin(ShadowPlugin)
-      project.configurations.compile.dependencies
-        .findAll()
-        .toSorted(sortClosure)
-        .each({ c -> depJavadocClosure(hasShadow, c) })
+      def compileConfig = project.configurations.findByName('implementation') ?: project.configurations.findByName('api')
+      if (compileConfig != null) {
+        compileConfig.dependencies
+          .findAll()
+          .toSorted(sortClosure)
+          .each({ c -> depJavadocClosure(hasShadow, c) })
+      }
       project.configurations.compileOnly.dependencies
         .findAll()
         .toSorted(sortClosure)

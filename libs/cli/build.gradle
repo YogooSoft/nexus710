@@ -17,12 +17,12 @@
  * under the License.
  */
 apply plugin: 'elasticsearch.build'
-apply plugin: 'nebula.optional-base'
+// nebula.optional-base removed
 apply plugin: 'elasticsearch.publish'
 
 dependencies {
   api 'net.sf.jopt-simple:jopt-simple:5.0.2'
-  api project(':libs:elasticsearch-core')
+  api project(':libs:nexus710-core')
 }
 
 test.enabled = false
