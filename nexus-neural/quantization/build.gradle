@@ -1,0 +1,12 @@
+/*
+ * Nexus 710 Neural Engine — Vector Quantization
+ * Product Quantization (PQ) and Scalar Quantization (SQ) for vector compression
+ */
+
+apply plugin: 'java-library'
+
+group = 'io.nexus710'
+
+dependencies {
+    api project(':nexus-neural:hnsw')
+}

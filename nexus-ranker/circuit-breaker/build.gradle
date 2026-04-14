@@ -1,0 +1,12 @@
+/*
+ * Nexus 710 Precision Ranker — Dynamic Circuit Breaker
+ * Per-query memory tracking and elastic throttling to prevent OOM
+ */
+
+apply plugin: 'java-library'
+
+group = 'io.nexus710'
+
+dependencies {
+    api project(':server')
+}

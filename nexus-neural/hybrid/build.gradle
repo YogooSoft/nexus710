@@ -1,0 +1,13 @@
+/*
+ * Nexus 710 Neural Engine — Hybrid Search and RRF Fusion
+ * Reciprocal Rank Fusion for BM25 + vector score combination
+ */
+
+apply plugin: 'java-library'
+
+group = 'io.nexus710'
+
+dependencies {
+    api project(':nexus-neural:hnsw')
+    api project(':server')
+}

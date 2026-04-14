@@ -1,0 +1,12 @@
+/*
+ * Nexus 710 Aero Storage — Block Cache
+ * Multi-level block cache (heap + mmap SSD + S3) with weighted LRU eviction
+ */
+
+apply plugin: 'java-library'
+
+group = 'io.nexus710'
+
+dependencies {
+    api project(':server')
+}

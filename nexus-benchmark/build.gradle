@@ -1,0 +1,12 @@
+/*
+ * Nexus 710 Benchmark Suite
+ * Performance benchmarks for vector search, hybrid queries, storage, and ranking
+ */
+
+apply plugin: 'java-library'
+
+group = 'io.nexus710'
+
+dependencies {
+    implementation project(':server')
+}

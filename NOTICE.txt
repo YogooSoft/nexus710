@@ -1,0 +1,8 @@
+Nexus 710
+Copyright 2026 Nexus 710 Contributors
+
+Based on Elasticsearch 7.10.2
+Copyright 2009-2021 Elasticsearch
+
+This product includes software developed by The Apache Software
+Foundation (http://www.apache.org/).

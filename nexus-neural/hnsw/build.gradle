@@ -1,0 +1,12 @@
+/*
+ * Nexus 710 Neural Engine — HNSW Index Integration
+ * Lucene 9.x KnnVectorField integration and HNSW lifecycle management
+ */
+
+apply plugin: 'java-library'
+
+group = 'io.nexus710'
+
+dependencies {
+    api project(':server')
+}

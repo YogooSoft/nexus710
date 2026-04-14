@@ -1,0 +1,68 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+gradle-app.setting
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Compiled
+*.class
+*.jar
+*.war
+*.ear
+target/
+
+# Logs
+*.log
+logs/
+
+# Runtime
+hs_err_pid*
+replay_pid*
+
+# Native
+*.so
+*.dylib
+*.dll
+*.o
+*.a
+
+# Rust
+nexus-ranker/native-plugin/target/
+Cargo.lock
+
+# Environment
+.env
+.env.local
+
+# Test
+test-output/
+test-results/
+
+# Distribution artifacts
+nexus-distribution/build/
+*.tar.gz
+*.zip
+*.deb
+*.rpm
+
+# MinIO data
+minio-data/
+
+# Elasticsearch legacy
+data/
+
+docs/

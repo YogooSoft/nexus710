@@ -1,0 +1,12 @@
+/*
+ * Nexus 710 Precision Ranker — Native Scoring Plugin Framework
+ * JNI bridge to Rust/C++ scoring operators for high-performance ranking
+ */
+
+apply plugin: 'java-library'
+
+group = 'io.nexus710'
+
+dependencies {
+    api project(':server')
+}

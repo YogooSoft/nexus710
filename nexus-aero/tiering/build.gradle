@@ -1,0 +1,13 @@
+/*
+ * Nexus 710 Aero Storage — Hot/Cold Tiering
+ * Automatic data tiering based on index age and access frequency
+ */
+
+apply plugin: 'java-library'
+
+group = 'io.nexus710'
+
+dependencies {
+    api project(':nexus-aero:s3-backend')
+    api project(':nexus-aero:block-cache')
+}

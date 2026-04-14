@@ -1,0 +1,12 @@
+/*
+ * Nexus 710 Aero Storage — S3 Backend
+ * Lucene Directory implementation backed by S3/MinIO object storage
+ */
+
+apply plugin: 'java-library'
+
+group = 'io.nexus710'
+
+dependencies {
+    api project(':server')
+}

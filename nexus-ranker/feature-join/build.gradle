@@ -1,0 +1,12 @@
+/*
+ * Nexus 710 Precision Ranker — Feature Join
+ * Real-time feature association during search fetch phase for precision re-ranking
+ */
+
+apply plugin: 'java-library'
+
+group = 'io.nexus710'
+
+dependencies {
+    api project(':server')
+}
