@@ -29,22 +29,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /** Simple tests for SecureSM */
 public class SecureSMTests extends TestCase {
     static {
-        // install a mock security policy:
-        // AllPermission to source code
-        // ThreadPermission not granted anywhere else
-        final ProtectionDomain sourceCode = SecureSM.class.getProtectionDomain();
-        Policy.setPolicy(new Policy() {
-            @Override
-            public boolean implies(ProtectionDomain domain, Permission permission) {
-                if (domain == sourceCode) {
+        if (Runtime.version().feature() < 24) {
+            final ProtectionDomain sourceCode = SecureSM.class.getProtectionDomain();
+            Policy.setPolicy(new Policy() {
+                @Override
+                public boolean implies(ProtectionDomain domain, Permission permission) {
+                    if (domain == sourceCode) {
+                        return true;
+                    } else if (permission instanceof ThreadPermission) {
+                        return false;
+                    }
                     return true;
-                } else if (permission instanceof ThreadPermission) {
-                    return false;
                 }
-                return true;
-            }
-        });
-        System.setSecurityManager(SecureSM.createTestSecureSM());
+            });
+            System.setSecurityManager(SecureSM.createTestSecureSM());
+        }
     }
 
     @SuppressForbidden(reason = "testing that System#exit is blocked")

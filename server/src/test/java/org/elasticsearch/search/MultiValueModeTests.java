@@ -684,6 +684,11 @@ public class MultiValueModeTests extends ESTestCase {
             int i;
 
             @Override
+            public int docValueCount() {
+                return array[doc].length;
+            }
+
+            @Override
             public long nextOrd() {
                 if (i < array[doc].length) {
                     return array[doc][i++];

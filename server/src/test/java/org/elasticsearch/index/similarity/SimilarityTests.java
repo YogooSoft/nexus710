@@ -31,7 +31,7 @@ import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.search.similarities.LMJelinekMercerSimilarity;
 import org.apache.lucene.search.similarities.LambdaTTF;
 import org.apache.lucene.search.similarities.NormalizationH2;
-import org.apache.lucene.search.similarity.LegacyBM25Similarity;
+import org.apache.lucene.search.similarities.BM25Similarity;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.compress.CompressedXContent;
 import org.elasticsearch.common.settings.Settings;
@@ -60,7 +60,7 @@ public class SimilarityTests extends ESSingleNodeTestCase {
 
     public void testResolveDefaultSimilarities() {
         SimilarityService similarityService = createIndex("foo").similarityService();
-        assertThat(similarityService.getSimilarity("BM25").get(), instanceOf(LegacyBM25Similarity.class));
+        assertThat(similarityService.getSimilarity("BM25").get(), instanceOf(BM25Similarity.class));
         assertThat(similarityService.getSimilarity("boolean").get(), instanceOf(BooleanSimilarity.class));
         assertThat(similarityService.getSimilarity("default"), equalTo(null));
         IllegalArgumentException e = expectThrows(IllegalArgumentException.class,
@@ -94,10 +94,10 @@ public class SimilarityTests extends ESSingleNodeTestCase {
             .put("index.similarity.my_similarity.discount_overlaps", false)
             .build();
         MapperService mapperService = createIndex("foo", indexSettings, "type", mapping).mapperService();
-        assertThat(mapperService.fieldType("field1").getTextSearchInfo().getSimilarity().get(), instanceOf(LegacyBM25Similarity.class));
+        assertThat(mapperService.fieldType("field1").getTextSearchInfo().getSimilarity().get(), instanceOf(BM25Similarity.class));
 
-        LegacyBM25Similarity similarity
-            = (LegacyBM25Similarity) mapperService.fieldType("field1").getTextSearchInfo().getSimilarity().get();
+        BM25Similarity similarity
+            = (BM25Similarity) mapperService.fieldType("field1").getTextSearchInfo().getSimilarity().get();
         assertThat(similarity.getK1(), equalTo(2.0f));
         assertThat(similarity.getB(), equalTo(0.5f));
         assertThat(similarity.getDiscountOverlaps(), equalTo(false));

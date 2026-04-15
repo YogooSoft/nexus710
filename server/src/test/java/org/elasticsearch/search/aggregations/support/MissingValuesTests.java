@@ -25,7 +25,7 @@ import com.carrotsearch.randomizedtesting.generators.RandomStrings;
 import org.apache.lucene.index.SortedNumericDocValues;
 import org.apache.lucene.index.SortedSetDocValues;
 import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.TestUtil;
+import org.apache.lucene.tests.util.TestUtil;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.index.fielddata.AbstractSortedNumericDocValues;
 import org.elasticsearch.index.fielddata.AbstractSortedSetDocValues;
@@ -116,6 +116,11 @@ public class MissingValuesTests extends ESTestCase {
 
             int doc = -1;
             int i;
+
+            @Override
+            public int docValueCount() {
+                return ords[doc].length;
+            }
 
             @Override
             public boolean advanceExact(int docID) {
@@ -225,6 +230,11 @@ public class MissingValuesTests extends ESTestCase {
 
     private static SortedSetDocValues asOrds(BytesRef[] values) {
         return new AbstractSortedSetDocValues() {
+
+            @Override
+            public int docValueCount() {
+                return 1;
+            }
 
             @Override
             public boolean advanceExact(int target) throws IOException {

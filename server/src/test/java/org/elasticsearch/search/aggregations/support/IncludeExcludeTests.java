@@ -62,6 +62,11 @@ public class IncludeExcludeTests extends ESTestCase {
             boolean consumed = true;
 
             @Override
+            public int docValueCount() {
+                return 1;
+            }
+
+            @Override
             public boolean advanceExact(int docID) {
                 consumed = false;
                 return true;

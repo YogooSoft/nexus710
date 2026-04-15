@@ -333,6 +333,11 @@ public class TestingConventionsTasks extends DefaultTask {
             getLogger().debug("{} is a test because it matches the naming convention", className);
             return true;
         }
+        String simpleName = className.contains(".") ? className.substring(className.lastIndexOf('.') + 1) : className;
+        if (simpleName.startsWith("Test") && simpleName.length() > 4 && Character.isUpperCase(simpleName.charAt(4))) {
+            getLogger().debug("{} is a test because it matches the Lucene Test* prefix convention", className);
+            return true;
+        }
         return false;
     }
 

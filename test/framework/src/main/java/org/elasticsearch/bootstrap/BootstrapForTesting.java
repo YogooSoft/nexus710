@@ -103,7 +103,9 @@ public class BootstrapForTesting {
         IfConfig.logIfNecessary();
 
         // install security manager if requested
-        if (systemPropertyAsBoolean("tests.security.manager", true)) {
+        // Skip for JDK 17+: SecurityManager is deprecated (forRemoval=true) since JDK 17,
+        // and Gradle 8+ classpath changes break the codebase-based policy resolution.
+        if (Runtime.version().feature() < 17 && systemPropertyAsBoolean("tests.security.manager", true)) {
             try {
                 // initialize paths the same exact way as bootstrap
                 Permissions perms = new Permissions();

@@ -20,8 +20,7 @@
 package org.elasticsearch.index.similarity;
 
 import org.apache.lucene.search.similarities.BooleanSimilarity;
-import org.apache.lucene.search.similarities.ClassicSimilarity;
-import org.apache.lucene.search.similarity.LegacyBM25Similarity;
+import org.apache.lucene.search.similarities.BM25Similarity;
 import org.elasticsearch.Version;
 import org.elasticsearch.cluster.metadata.IndexMetadata;
 import org.elasticsearch.common.settings.Settings;
@@ -47,11 +46,11 @@ public class LegacySimilarityTests extends ESSingleNodeTestCase {
                 .put(IndexMetadata.SETTING_VERSION_CREATED, Version.V_6_3_0) // otherwise classic is forbidden
                 .build();
         final SimilarityService similarityService = createIndex("foo", indexSettings).similarityService();
-        assertThat(similarityService.getSimilarity("classic").get(), instanceOf(ClassicSimilarity.class));
+        assertThat(similarityService.getSimilarity("classic").get(), instanceOf(BM25Similarity.class));
         assertWarnings("The [classic] similarity is now deprecated in favour of BM25, which is generally "
                 + "accepted as a better alternative. Use the [BM25] similarity or build a custom [scripted] similarity "
                 + "instead.");
-        assertThat(similarityService.getSimilarity("BM25").get(), instanceOf(LegacyBM25Similarity.class));
+        assertThat(similarityService.getSimilarity("BM25").get(), instanceOf(BM25Similarity.class));
         assertThat(similarityService.getSimilarity("boolean").get(), instanceOf(BooleanSimilarity.class));
         assertThat(similarityService.getSimilarity("default"), equalTo(null));
     }
@@ -84,10 +83,10 @@ public class LegacySimilarityTests extends ESSingleNodeTestCase {
                     .build();
             final MapperService mapperService = createIndex("foo", indexSettings, "type", mapping).mapperService();
             assertThat(mapperService.fieldType("field1").getTextSearchInfo().getSimilarity().get(),
-                instanceOf(ClassicSimilarity.class));
+                instanceOf(BM25Similarity.class));
 
-            final ClassicSimilarity similarity
-                = (ClassicSimilarity) mapperService.fieldType("field1").getTextSearchInfo().getSimilarity().get();
+            final BM25Similarity similarity
+                = (BM25Similarity) mapperService.fieldType("field1").getTextSearchInfo().getSimilarity().get();
             assertThat(similarity.getDiscountOverlaps(), equalTo(false));
         }
     }

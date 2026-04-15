@@ -65,7 +65,7 @@ public class Netty4HttpPipeliningHandlerTests extends ESTestCase {
     @After
     public void tearDown() throws Exception {
         waitingRequests.keySet().forEach(this::finishRequest);
-        shutdownExecutorService();
+        shutdownExecutor();
         super.tearDown();
     }
 
@@ -74,7 +74,7 @@ public class Netty4HttpPipeliningHandlerTests extends ESTestCase {
         return finishingRequests.get(url);
     }
 
-    private void shutdownExecutorService() throws InterruptedException {
+    private void shutdownExecutor() throws InterruptedException {
         if (!handlerService.isShutdown()) {
             handlerService.shutdown();
             handlerService.awaitTermination(10, TimeUnit.SECONDS);

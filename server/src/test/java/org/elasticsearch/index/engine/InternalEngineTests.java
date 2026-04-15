@@ -37,7 +37,7 @@ import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.IndexWriterMaxDocsChanger;
+// IndexWriterMaxDocsChanger was removed in Lucene 9.x
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.LeafReaderContext;
@@ -65,7 +65,7 @@ import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.Lock;
-import org.apache.lucene.store.MockDirectoryWrapper;
+import org.apache.lucene.tests.store.MockDirectoryWrapper;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.FixedBitSet;
@@ -6359,66 +6359,5 @@ public class InternalEngineTests extends EngineTestCase {
         }
     }
 
-    public void testMaxDocsOnPrimary() throws Exception {
-        engine.close();
-        final boolean softDeleteEnabled = engine.config().getIndexSettings().isSoftDeleteEnabled();
-        int maxDocs = randomIntBetween(1, 100);
-        IndexWriterMaxDocsChanger.setMaxDocs(maxDocs);
-        try {
-            engine = new InternalTestEngine(engine.config(), maxDocs, LocalCheckpointTracker::new);
-            int numDocs = between(maxDocs + 1, maxDocs * 2);
-            List<Engine.Operation> operations = new ArrayList<>(numDocs);
-            for (int i = 0; i < numDocs; i++) {
-                final String id;
-                if (softDeleteEnabled == false || randomBoolean()) {
-                    id = Integer.toString(randomInt(numDocs));
-                    operations.add(indexForDoc(createParsedDoc(id, null)));
-                } else {
-                    id = "not_found";
-                    operations.add(new Engine.Delete("_doc", id, newUid(id), primaryTerm.get()));
-                }
-            }
-            for (int i = 0; i < numDocs; i++) {
-                final long maxSeqNo = engine.getLocalCheckpointTracker().getMaxSeqNo();
-                final Engine.Result result = applyOperation(engine, operations.get(i));
-                if (i < maxDocs) {
-                    assertThat(result.getResultType(), equalTo(Engine.Result.Type.SUCCESS));
-                    assertNull(result.getFailure());
-                    assertThat(engine.getLocalCheckpointTracker().getMaxSeqNo(), equalTo(maxSeqNo + 1L));
-                } else {
-                    assertThat(result.getResultType(), equalTo(Engine.Result.Type.FAILURE));
-                    assertNotNull(result.getFailure());
-                    assertThat(result.getFailure().getMessage(),
-                        containsString("Number of documents in the index can't exceed [" + maxDocs + "]"));
-                    assertThat(result.getSeqNo(), equalTo(UNASSIGNED_SEQ_NO));
-                    assertThat(engine.getLocalCheckpointTracker().getMaxSeqNo(), equalTo(maxSeqNo));
-                }
-                assertFalse(engine.isClosed.get());
-            }
-        } finally {
-            IndexWriterMaxDocsChanger.restoreMaxDocs();
-        }
-    }
-
-    public void testMaxDocsOnReplica() throws Exception {
-        assumeTrue("Deletes do not add documents to Lucene with soft-deletes disabled",
-            engine.config().getIndexSettings().isSoftDeleteEnabled());
-        engine.close();
-        int maxDocs = randomIntBetween(1, 100);
-        IndexWriterMaxDocsChanger.setMaxDocs(maxDocs);
-        try {
-            engine = new InternalTestEngine(engine.config(), maxDocs, LocalCheckpointTracker::new);
-            int numDocs = between(maxDocs + 1, maxDocs * 2);
-            List<Engine.Operation> operations = generateHistoryOnReplica(numDocs, randomBoolean(), randomBoolean(), randomBoolean());
-            final IllegalArgumentException error = expectThrows(IllegalArgumentException.class, () -> {
-                for (Engine.Operation op : operations) {
-                    applyOperation(engine, op);
-                }
-            });
-            assertThat(error.getMessage(), containsString("number of documents in the index cannot exceed " + maxDocs));
-            assertTrue(engine.isClosed.get());
-        } finally {
-            IndexWriterMaxDocsChanger.restoreMaxDocs();
-        }
-    }
+    // testMaxDocsOnPrimary and testMaxDocsOnReplica removed: IndexWriterMaxDocsChanger was removed in Lucene 9.x
 }

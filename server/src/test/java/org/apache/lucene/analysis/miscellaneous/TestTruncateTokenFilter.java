@@ -20,7 +20,7 @@
 package org.apache.lucene.analysis.miscellaneous;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.MockTokenizer;
+import org.apache.lucene.tests.analysis.MockTokenizer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -30,7 +30,7 @@ import java.io.IOException;
 
 import static org.hamcrest.Matchers.equalTo;
 
-public class TruncateTokenFilterTests extends ESTestCase {
+public class TestTruncateTokenFilter extends ESTestCase {
     public void testSimple() throws IOException {
         Analyzer analyzer = new Analyzer() {
             @Override

@@ -30,7 +30,7 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.RandomIndexWriter;
+import org.apache.lucene.tests.index.RandomIndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queries.CommonTermsQuery;
 import org.apache.lucene.search.BooleanClause;
@@ -55,7 +55,7 @@ import java.util.Locale;
 import static org.apache.lucene.search.uhighlight.CustomUnifiedHighlighter.MULTIVAL_SEP_CHAR;
 import static org.hamcrest.CoreMatchers.equalTo;
 
-public class CustomUnifiedHighlighterTests extends ESTestCase {
+public class TestCustomUnifiedHighlighter extends ESTestCase {
     private void assertHighlightOneDoc(String fieldName, String[] inputs, Analyzer analyzer, Query query,
                                        Locale locale, BreakIterator breakIterator,
                                        int noMatchSize, String[] expectedPassages) throws Exception {

@@ -19,7 +19,7 @@
 
 package org.elasticsearch.index.engine;
 
-import org.apache.lucene.index.IndexWriterMaxDocsChanger;
+import org.apache.lucene.tests.index.IndexWriterMaxDocsChanger;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.cluster.metadata.IndexMetadata;

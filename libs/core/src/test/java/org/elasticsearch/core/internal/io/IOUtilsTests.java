@@ -17,8 +17,9 @@
 
 package org.elasticsearch.core.internal.io;
 
-import org.apache.lucene.mockfile.FilterFileSystemProvider;
-import org.apache.lucene.mockfile.FilterPath;
+import org.apache.lucene.tests.mockfile.FilterFileSystem;
+import org.apache.lucene.tests.mockfile.FilterFileSystemProvider;
+import org.apache.lucene.tests.mockfile.FilterPath;
 import org.apache.lucene.util.Constants;
 import org.elasticsearch.common.CheckedConsumer;
 import org.elasticsearch.common.io.PathUtils;
@@ -157,7 +158,7 @@ public class IOUtilsTests extends ESTestCase {
         for (int i = 0; i < numberOfLocations; i++) {
             if (exception && randomBoolean()) {
                 final Path location = createTempDir();
-                final FileSystem fs =
+                final FilterFileSystem fs = (FilterFileSystem)
                         new AccessDeniedWhileDeletingFileSystem(location.getFileSystem()).getFileSystem(URI.create("file:///"));
                 final Path wrapped = new FilterPath(location, fs);
                 locations[i] = wrapped.resolve(randomAlphaOfLength(8));
@@ -242,7 +243,7 @@ public class IOUtilsTests extends ESTestCase {
 
     public void testFsyncAccessDeniedOpeningDirectory() throws Exception {
         final Path path = createTempDir().toRealPath();
-        final FileSystem fs = new AccessDeniedWhileOpeningDirectoryFileSystem(path.getFileSystem()).getFileSystem(URI.create("file:///"));
+        final FilterFileSystem fs = (FilterFileSystem) new AccessDeniedWhileOpeningDirectoryFileSystem(path.getFileSystem()).getFileSystem(URI.create("file:///"));
         final Path wrapped = new FilterPath(path, fs);
         if (Constants.WINDOWS) {
             // no exception, we early return and do not even try to open the directory

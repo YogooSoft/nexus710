@@ -27,6 +27,7 @@ import org.apache.lucene.search.Query;
 import org.elasticsearch.test.AbstractQueryTestCase;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -60,10 +61,11 @@ public class DisMaxQueryBuilderTests extends AbstractQueryTestCase<DisMaxQueryBu
         assertThat(query, instanceOf(DisjunctionMaxQuery.class));
         DisjunctionMaxQuery disjunctionMaxQuery = (DisjunctionMaxQuery) query;
         assertThat(disjunctionMaxQuery.getTieBreakerMultiplier(), equalTo(queryBuilder.tieBreaker()));
-        assertThat(disjunctionMaxQuery.getDisjuncts().size(), equalTo(queries.size()));
+        List<Query> luceneDisjuncts = new ArrayList<>(disjunctionMaxQuery.getDisjuncts());
+        assertThat(luceneDisjuncts.size(), equalTo(queries.size()));
         Iterator<Query> queryIterator = queries.iterator();
-        for (int i = 0; i < disjunctionMaxQuery.getDisjuncts().size(); i++) {
-            assertThat(disjunctionMaxQuery.getDisjuncts().get(i), equalTo(queryIterator.next()));
+        for (int i = 0; i < luceneDisjuncts.size(); i++) {
+            assertThat(luceneDisjuncts.get(i), equalTo(queryIterator.next()));
         }
     }
 
@@ -106,7 +108,7 @@ public class DisMaxQueryBuilderTests extends AbstractQueryTestCase<DisMaxQueryBu
         assertThat(query, instanceOf(DisjunctionMaxQuery.class));
         DisjunctionMaxQuery disjunctionMaxQuery = (DisjunctionMaxQuery) query;
 
-        List<Query> disjuncts = disjunctionMaxQuery.getDisjuncts();
+        List<Query> disjuncts = new ArrayList<>(disjunctionMaxQuery.getDisjuncts());
         assertThat(disjuncts.size(), equalTo(1));
 
         assertThat(disjuncts.get(0), instanceOf(BoostQuery.class));

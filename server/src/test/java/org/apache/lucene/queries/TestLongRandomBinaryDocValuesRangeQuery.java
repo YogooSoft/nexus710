@@ -18,10 +18,10 @@
  */
 package org.apache.lucene.queries;
 
-import org.apache.lucene.util.TestUtil;
+import org.apache.lucene.tests.util.TestUtil;
 import org.elasticsearch.index.mapper.RangeType;
 
-public class LongRandomBinaryDocValuesRangeQueryTests extends BaseRandomBinaryDocValuesRangeQueryTestCase {
+public class TestLongRandomBinaryDocValuesRangeQuery extends BaseRandomBinaryDocValuesRangeQueryTestCase {
 
     @Override
     protected String fieldName() {

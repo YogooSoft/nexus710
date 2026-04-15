@@ -36,8 +36,8 @@ import org.apache.lucene.search.SynonymQuery;
 import org.apache.lucene.search.TermInSetQuery;
 import org.apache.lucene.search.TermQuery;
 // Span queries removed in Lucene 9.x
-// import org.apache.lucene.search.spans.SpanOrQuery;
-// import org.apache.lucene.search.spans.SpanTermQuery;
+// import org.apache.lucene.queries.spans.SpanOrQuery;
+// import org.apache.lucene.queries.spans.SpanTermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.NumericUtils;
 import org.apache.lucene.util.automaton.ByteRunAutomaton;

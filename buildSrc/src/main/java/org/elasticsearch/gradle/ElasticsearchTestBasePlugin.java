@@ -50,7 +50,10 @@ public class ElasticsearchTestBasePlugin implements Plugin<Project> {
         // for fips mode check
         project.getRootProject().getPluginManager().apply(GlobalBuildInfoPlugin.class);
         // Default test task should run only unit tests
-        maybeConfigure(project.getTasks(), "test", Test.class, task -> task.include("**/*Tests.class"));
+        maybeConfigure(project.getTasks(), "test", Test.class, task -> {
+            task.include("**/*Tests.class");
+            task.include("**/Test*.class");
+        });
 
         // none of this stuff is applicable to the `:buildSrc` project tests
         if (project.getPath().equals(":build-tools")) {
@@ -94,7 +97,16 @@ public class ElasticsearchTestBasePlugin implements Plugin<Project> {
                         test.systemProperty("java.locale.providers", "SPI,JRE");
                     } else {
                         test.systemProperty("java.locale.providers", "SPI,COMPAT");
-                        test.jvmArgs("--illegal-access=warn");
+                        test.jvmArgs(
+                            "--add-opens=java.base/java.lang=ALL-UNNAMED",
+                            "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+                            "--add-opens=java.base/java.util=ALL-UNNAMED",
+                            "--add-opens=java.base/java.io=ALL-UNNAMED",
+                            "--add-opens=java.base/java.nio=ALL-UNNAMED",
+                            "--add-opens=java.base/java.nio.file=ALL-UNNAMED",
+                            "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
+                            "--add-opens=java.base/java.net=ALL-UNNAMED"
+                        );
                     }
                 }
             });
@@ -190,6 +202,20 @@ public class ElasticsearchTestBasePlugin implements Plugin<Project> {
                 // override the suite timeout to 30 mins for windows, because it has the most inefficient filesystem known to man
                 test.systemProperty("tests.timeoutSuite", "1800000!");
             }
+
+            /*
+             * Gradle 8+ may place the project's own jar (from build/distributions/) on the test classpath
+             * alongside the classes directory, causing JarHell to detect duplicate classes.
+             * Filter out the project's own jar so only the classes directory is used.
+             */
+            File distributionsDir = new File(project.getBuildDir(), "distributions");
+            test.setClasspath(test.getClasspath().filter(file ->
+                !(file.getParentFile() != null
+                    && file.getParentFile().equals(distributionsDir)
+                    && file.getName().endsWith(".jar")
+                    && !file.getName().contains("-tests")
+                    && !file.getName().contains("-test-fixtures"))
+            ));
 
             /*
              *  If this project builds a shadow JAR than any unit tests should test against that artifact instead of

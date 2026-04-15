@@ -107,14 +107,6 @@ public class MergePolicySettingsTests extends ESTestCase {
         assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getMaxMergeAtOnce(),
             MergePolicyConfig.DEFAULT_MAX_MERGE_AT_ONCE - 1);
 
-        assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getMaxMergeAtOnceExplicit(),
-            MergePolicyConfig.DEFAULT_MAX_MERGE_AT_ONCE_EXPLICIT);
-        indexSettings.updateIndexMetadata(newIndexMeta("index",
-            Settings.builder().put(MergePolicyConfig.INDEX_MERGE_POLICY_MAX_MERGE_AT_ONCE_EXPLICIT_SETTING.getKey(),
-                MergePolicyConfig.DEFAULT_MAX_MERGE_AT_ONCE_EXPLICIT - 1).build()));
-        assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getMaxMergeAtOnceExplicit(),
-            MergePolicyConfig.DEFAULT_MAX_MERGE_AT_ONCE_EXPLICIT-1);
-
         assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getMaxMergedSegmentMB(),
             MergePolicyConfig.DEFAULT_MAX_MERGED_SEGMENT.getMbFrac(), 0.0001);
         indexSettings.updateIndexMetadata(newIndexMeta("index",
@@ -131,12 +123,6 @@ public class MergePolicySettingsTests extends ESTestCase {
         assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getSegmentsPerTier(),
             MergePolicyConfig.DEFAULT_SEGMENTS_PER_TIER + 1, 0);
 
-        assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getDeletesPctAllowed(),
-            MergePolicyConfig.DEFAULT_DELETES_PCT_ALLOWED, 0);
-        indexSettings.updateIndexMetadata(newIndexMeta("index",
-            Settings.builder().put(MergePolicyConfig.INDEX_MERGE_POLICY_DELETES_PCT_ALLOWED_SETTING.getKey(), 22).build()));
-        assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getDeletesPctAllowed(), 22, 0);
-
         IllegalArgumentException exc = expectThrows(IllegalArgumentException.class, () ->
             indexSettings.updateIndexMetadata(newIndexMeta("index",
                 Settings.builder().put(MergePolicyConfig.INDEX_MERGE_POLICY_DELETES_PCT_ALLOWED_SETTING.getKey(), 53).build())));
@@ -149,14 +135,10 @@ public class MergePolicySettingsTests extends ESTestCase {
             new ByteSizeValue(MergePolicyConfig.DEFAULT_FLOOR_SEGMENT.getMb(), ByteSizeUnit.MB).getMbFrac(), 0.00);
         assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getMaxMergeAtOnce(),
             MergePolicyConfig.DEFAULT_MAX_MERGE_AT_ONCE);
-        assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getMaxMergeAtOnceExplicit(),
-            MergePolicyConfig.DEFAULT_MAX_MERGE_AT_ONCE_EXPLICIT);
         assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getMaxMergedSegmentMB(),
             new ByteSizeValue(MergePolicyConfig.DEFAULT_MAX_MERGED_SEGMENT.getBytes() + 1).getMbFrac(), 0.0001);
         assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getSegmentsPerTier(),
             MergePolicyConfig.DEFAULT_SEGMENTS_PER_TIER, 0);
-        assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getDeletesPctAllowed(),
-            MergePolicyConfig.DEFAULT_DELETES_PCT_ALLOWED, 0);
     }
 
     public Settings build(String value) {

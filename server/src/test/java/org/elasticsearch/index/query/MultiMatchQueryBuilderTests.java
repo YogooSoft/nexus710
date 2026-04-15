@@ -223,7 +223,7 @@ public class MultiMatchQueryBuilderTests extends AbstractQueryTestCase<MultiMatc
         assertThat(query, instanceOf(DisjunctionMaxQuery.class));
         DisjunctionMaxQuery disMaxQuery = (DisjunctionMaxQuery) query;
         assertThat(disMaxQuery.getTieBreakerMultiplier(), equalTo(0.0f));
-        List<Query> disjuncts = disMaxQuery.getDisjuncts();
+        List<Query> disjuncts = new java.util.ArrayList<>(disMaxQuery.getDisjuncts());
         assertThat(disjuncts.get(0), instanceOf(TermQuery.class));
         assertThat(((TermQuery) disjuncts.get(0)).getTerm(), equalTo(new Term(TEXT_FIELD_NAME, "test")));
         assertThat(disjuncts.get(1), instanceOf(TermQuery.class));

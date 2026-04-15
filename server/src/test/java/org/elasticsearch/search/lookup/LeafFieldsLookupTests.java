@@ -21,6 +21,8 @@ package org.elasticsearch.search.lookup;
 import org.apache.lucene.index.DocValuesType;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexOptions;
+import org.apache.lucene.index.VectorEncoding;
+import org.apache.lucene.index.VectorSimilarityFunction;
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.StoredFieldVisitor;
 import org.elasticsearch.index.mapper.MappedFieldType;
@@ -56,7 +58,8 @@ public class LeafFieldsLookupTests extends ESTestCase {
         when(mapperService.fieldType("alias")).thenReturn(fieldType);
 
         FieldInfo mockFieldInfo = new FieldInfo("field", 1, false, false, true,
-            IndexOptions.NONE, DocValuesType.NONE, -1, Collections.emptyMap(), 0, 0, 0, false);
+            IndexOptions.NONE, DocValuesType.NONE, -1, Collections.emptyMap(), 0, 0, 0,
+            0, VectorEncoding.FLOAT32, VectorSimilarityFunction.EUCLIDEAN, false, false);
 
         LeafReader leafReader = mock(LeafReader.class);
         doAnswer(invocation -> {

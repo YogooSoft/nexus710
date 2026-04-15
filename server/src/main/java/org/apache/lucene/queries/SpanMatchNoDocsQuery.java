@@ -18,22 +18,25 @@
  */
 package org.apache.lucene.queries;
 
-// TODO: Lucene 9.x migration - spans removed
-// This class previously extended SpanQuery. Now delegates to MatchNoDocsQuery.
-
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermStates;
+import org.apache.lucene.queries.spans.SpanQuery;
+import org.apache.lucene.queries.spans.SpanWeight;
+import org.apache.lucene.queries.spans.SpanWeight.Postings;
+import org.apache.lucene.queries.spans.Spans;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MatchNoDocsQuery;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryVisitor;
 import org.apache.lucene.search.ScoreMode;
-import org.apache.lucene.search.Weight;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 
 /**
- * A Query that matches no documents (stub replacement for the removed SpanQuery-based version).
+ * A {@link SpanQuery} that matches no documents.
  */
-public class SpanMatchNoDocsQuery extends Query {
+public class SpanMatchNoDocsQuery extends SpanQuery {
     private final String field;
     private final String reason;
 
@@ -42,6 +45,7 @@ public class SpanMatchNoDocsQuery extends Query {
         this.reason = reason;
     }
 
+    @Override
     public String getField() {
         return field;
     }
@@ -62,11 +66,27 @@ public class SpanMatchNoDocsQuery extends Query {
     }
 
     @Override
-    public Weight createWeight(IndexSearcher searcher, ScoreMode scoreMode, float boost) throws IOException {
-        return new MatchNoDocsQuery(reason).createWeight(searcher, scoreMode, boost);
+    public void visit(QueryVisitor visitor) {
+        if (visitor.acceptField(field)) {
+            visitor.visitLeaf(this);
+        }
     }
 
     @Override
-    public void visit(QueryVisitor visitor) {
+    public SpanWeight createWeight(IndexSearcher searcher, ScoreMode scoreMode, float boost) throws IOException {
+        return new SpanWeight(this, searcher, Collections.emptyMap(), boost) {
+            @Override
+            public void extractTermStates(Map<Term, TermStates> contexts) {}
+
+            @Override
+            public Spans getSpans(LeafReaderContext ctx, Postings requiredPostings) throws IOException {
+                return null;
+            }
+
+            @Override
+            public boolean isCacheable(LeafReaderContext ctx) {
+                return true;
+            }
+        };
     }
 }

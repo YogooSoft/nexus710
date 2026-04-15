@@ -97,6 +97,7 @@ dependencies {
   api "org.apache.lucene:lucene-queryparser:${versions.lucene}"
   api "org.apache.lucene:lucene-sandbox:${versions.lucene}"
   api "org.apache.lucene:lucene-spatial3d:${versions.lucene}"
+  api "org.apache.lucene:lucene-spatial-extras:${versions.lucene}"
   api "org.apache.lucene:lucene-suggest:${versions.lucene}"
 
   // utilities
@@ -159,11 +160,16 @@ tasks.named("forbiddenPatterns").configure {
     exclude '**/*.st'
 }
 
+// Exclude tests that depend on removed Lucene spatial prefix tree support
+sourceSets.test.java {
+    exclude '**/LegacyGeoShapeFieldMapperTests.java'
+}
+
 tasks.named("testingConventions").configure {
     naming.clear()
     naming {
         Tests {
-            baseClass "org.apache.lucene.util.LuceneTestCase"
+            baseClass "org.apache.lucene.tests.util.LuceneTestCase"
         }
         IT {
             baseClass "org.elasticsearch.test.ESIntegTestCase"

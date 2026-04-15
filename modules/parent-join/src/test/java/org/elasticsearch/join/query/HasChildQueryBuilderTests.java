@@ -293,7 +293,7 @@ public class HasChildQueryBuilderTests extends AbstractQueryTestCase<HasChildQue
         assertThat(booleanQuery.clauses().get(0).getOccur(), equalTo(BooleanClause.Occur.MUST));
         assertThat(booleanQuery.clauses().get(0).getQuery(), instanceOf(TermInSetQuery.class));
         TermInSetQuery termsQuery = (TermInSetQuery) booleanQuery.clauses().get(0).getQuery();
-        Query rewrittenTermsQuery = termsQuery.rewrite(null);
+        Query rewrittenTermsQuery = termsQuery.rewrite((org.apache.lucene.search.IndexSearcher) null);
         assertThat(rewrittenTermsQuery, instanceOf(ConstantScoreQuery.class));
         ConstantScoreQuery constantScoreQuery = (ConstantScoreQuery) rewrittenTermsQuery;
         assertThat(constantScoreQuery.getQuery(), instanceOf(BooleanQuery.class));

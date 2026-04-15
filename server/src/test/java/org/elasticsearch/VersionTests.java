@@ -213,9 +213,9 @@ public class VersionTests extends ESTestCase {
 
 
     public void testIsAlpha() {
-        assertTrue(new Version(5000001, org.apache.lucene.util.Version.LUCENE_7_0_0).isAlpha());
-        assertFalse(new Version(4000002, org.apache.lucene.util.Version.LUCENE_7_0_0).isAlpha());
-        assertTrue(new Version(4000002, org.apache.lucene.util.Version.LUCENE_7_0_0).isBeta());
+        assertTrue(new Version(5000001, org.apache.lucene.util.Version.fromBits(7, 0, 0)).isAlpha());
+        assertFalse(new Version(4000002, org.apache.lucene.util.Version.fromBits(7, 0, 0)).isAlpha());
+        assertTrue(new Version(4000002, org.apache.lucene.util.Version.fromBits(7, 0, 0)).isBeta());
         assertTrue(Version.fromString("5.0.0-alpha14").isAlpha());
         assertEquals(5000014, Version.fromString("5.0.0-alpha14").id);
         assertTrue(Version.fromId(5000015).isAlpha());

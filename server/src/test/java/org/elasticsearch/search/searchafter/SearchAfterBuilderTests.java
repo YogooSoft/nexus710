@@ -269,7 +269,7 @@ public class SearchAfterBuilderTests extends ESTestCase {
             }
 
             @Override
-            public FieldComparator<?> newComparator(String fieldname, int numHits, int sortPos, boolean reversed) {
+            public FieldComparator<?> newComparator(String fieldname, int numHits, org.apache.lucene.search.Pruning pruning, boolean reversed) {
                 return null;
             }
 
