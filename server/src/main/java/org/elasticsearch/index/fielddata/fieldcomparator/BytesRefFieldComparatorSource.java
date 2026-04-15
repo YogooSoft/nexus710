@@ -87,7 +87,7 @@ public class BytesRefFieldComparatorSource extends IndexFieldData.XFieldComparat
         final boolean sortMissingLast = sortMissingLast(missingValue) ^ reversed;
         final BytesRef missingBytes = (BytesRef) missingObject(missingValue, reversed);
         if (indexFieldData instanceof IndexOrdinalsFieldData) {
-            return new TermOrdValComparator(numHits, null, sortMissingLast, reversed, pruning) {
+            return new TermOrdValComparator(numHits, fieldname, sortMissingLast, reversed, pruning) {
 
                 @Override
                 protected SortedDocValues getSortedDocValues(LeafReaderContext context, String field) throws IOException {

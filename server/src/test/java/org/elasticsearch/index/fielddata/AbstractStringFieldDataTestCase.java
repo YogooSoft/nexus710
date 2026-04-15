@@ -213,6 +213,7 @@ public abstract class AbstractStringFieldDataTestCase extends AbstractFieldDataI
 
         d = new Document();
         d.add(new StringField("_id", "6", Field.Store.NO));
+        d.add(new SortedSetDocValuesField("_id", new BytesRef("6")));
         writer.addDocument(d);
 
         d = new Document();

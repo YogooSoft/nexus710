@@ -204,18 +204,14 @@ public class ElasticsearchTestBasePlugin implements Plugin<Project> {
             }
 
             /*
-             * Gradle 8+ may place the project's own jar (from build/distributions/) on the test classpath
-             * alongside the classes directory, causing JarHell to detect duplicate classes.
-             * Filter out the project's own jar so only the classes directory is used.
+             * Gradle 8+ may place project jars from build/distributions/ on the test classpath
+             * alongside the corresponding classes directories, causing JarHell to detect duplicate
+             * classes. Only filter the distribution jar when the matching compiled classes
+             * directory is already present on the classpath; otherwise keep the jar.
              */
-            File distributionsDir = new File(project.getBuildDir(), "distributions");
-            test.setClasspath(test.getClasspath().filter(file ->
-                !(file.getParentFile() != null
-                    && file.getParentFile().equals(distributionsDir)
-                    && file.getName().endsWith(".jar")
-                    && !file.getName().contains("-tests")
-                    && !file.getName().contains("-test-fixtures"))
-            ));
+            FileCollection testClasspath = test.getClasspath();
+            FileCollection compiledMainClasses = testClasspath.filter(file -> file.getPath().endsWith("/build/classes/java/main"));
+            test.setClasspath(testClasspath.filter(file -> shouldFilterProjectDistributionJar(file, compiledMainClasses) == false));
 
             /*
              *  If this project builds a shadow JAR than any unit tests should test against that artifact instead of
@@ -235,5 +231,25 @@ public class ElasticsearchTestBasePlugin implements Plugin<Project> {
                 test.setClasspath(test.getClasspath().minus(mainRuntime).plus(shadowConfig).plus(shadowJar));
             });
         });
+    }
+
+    private static boolean shouldFilterProjectDistributionJar(File file, FileCollection compiledMainClasses) {
+        if (file.getName().endsWith(".jar") == false
+            || file.getName().contains("-tests")
+            || file.getName().contains("-test-fixtures")) {
+            return false;
+        }
+
+        File parent = file.getParentFile();
+        File grandParent = parent == null ? null : parent.getParentFile();
+        if (parent == null
+            || grandParent == null
+            || "distributions".equals(parent.getName()) == false
+            || "build".equals(grandParent.getName()) == false) {
+            return false;
+        }
+
+        File classesDir = new File(grandParent, "classes/java/main");
+        return compiledMainClasses.contains(classesDir);
     }
 }
