@@ -103,3 +103,13 @@ Apache License 2.0. Based on Elasticsearch 7.10.2 (Apache 2.0). All improvements
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+---
+
+Copyright © 2026 Yogoo Software Co., Ltd.
+
+Licensed under the MIT License.
+
+GitHub: [https://github.com/YogooSoft/nexus710](https://github.com/YogooSoft/nexus710)
+
+Contact: [support@yogoo.net](mailto:support@yogoo.net)
