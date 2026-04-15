@@ -106,9 +106,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
-Copyright © 2026 Yogoo Software Co., Ltd.
+Copyright © 2021 Elasticsearch B.V. Licensed under the Apache License, Version 2.0.
 
-Licensed under the MIT License.
+Copyright © 2026 Yogoo Software Co., Ltd. All modifications licensed under the Apache License, Version 2.0.
 
 GitHub: [https://github.com/YogooSoft/nexus710](https://github.com/YogooSoft/nexus710)
 

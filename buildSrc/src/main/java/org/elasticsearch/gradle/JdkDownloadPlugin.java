@@ -36,6 +36,7 @@ public class JdkDownloadPlugin implements Plugin<Project> {
 
     public static final String VENDOR_ADOPTOPENJDK = "adoptopenjdk";
     public static final String VENDOR_OPENJDK = "openjdk";
+    public static final String VENDOR_ADOPTIUM = "adoptium";
 
     private static final String REPO_NAME_PREFIX = "jdk_repo_";
     private static final String EXTENSION_NAME = "jdks";
@@ -95,7 +96,14 @@ public class JdkDownloadPlugin implements Plugin<Project> {
         String repoUrl;
         String artifactPattern;
 
-        if (jdk.getVendor().equals(VENDOR_ADOPTOPENJDK)) {
+        if (jdk.getVendor().equals(VENDOR_ADOPTIUM)) {
+            repoUrl = "https://api.adoptium.net/v3/binary/version/";
+            artifactPattern = "jdk-"
+                + jdk.getBaseVersion()
+                + "+"
+                + jdk.getBuild()
+                + "/[module]/[classifier]/jdk/hotspot/normal/eclipse";
+        } else if (jdk.getVendor().equals(VENDOR_ADOPTOPENJDK)) {
             repoUrl = "https://api.adoptopenjdk.net/v3/binary/version/";
             if (jdk.getMajor().equals("8")) {
                 // legacy pattern for JDK 8
@@ -153,9 +161,16 @@ public class JdkDownloadPlugin implements Plugin<Project> {
     }
 
     private static String dependencyNotation(Jdk jdk) {
-        String platformDep = jdk.getPlatform().equals("darwin") || jdk.getPlatform().equals("mac")
-            ? (jdk.getVendor().equals(VENDOR_ADOPTOPENJDK) ? "mac" : "osx")
-            : jdk.getPlatform();
+        String platformDep;
+        if (jdk.getPlatform().equals("darwin") || jdk.getPlatform().equals("mac")) {
+            if (jdk.getVendor().equals(VENDOR_ADOPTOPENJDK) || jdk.getVendor().equals(VENDOR_ADOPTIUM)) {
+                platformDep = "mac";
+            } else {
+                platformDep = "osx";
+            }
+        } else {
+            platformDep = jdk.getPlatform();
+        }
         String extension = jdk.getPlatform().equals("windows") ? "zip" : "tar.gz";
 
         return groupName(jdk) + ":" + platformDep + ":" + jdk.getBaseVersion() + ":" + jdk.getArchitecture() + "@" + extension;
