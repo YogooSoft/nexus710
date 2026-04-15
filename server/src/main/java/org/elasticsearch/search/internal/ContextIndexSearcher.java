@@ -28,7 +28,6 @@ import org.apache.lucene.search.CollectionStatistics;
 import org.apache.lucene.search.CollectionTerminatedException;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.CollectorManager;
-import org.apache.lucene.search.ConjunctionDISI;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.IndexSearcher;
@@ -194,19 +193,7 @@ public class ContextIndexSearcher extends IndexSearcher implements Releasable {
     }
 
     @Override
-    protected void search(List<LeafReaderContext> leaves, Weight weight, Collector collector) throws IOException {
-        for (LeafReaderContext ctx : leaves) { // search each subreader
-            searchLeaf(ctx, weight, collector);
-        }
-    }
-
-    /**
-     * Lower-level search API.
-     *
-     * {@link LeafCollector#collect(int)} is called for every matching document in
-     * the provided <code>ctx</code>.
-     */
-    private void searchLeaf(LeafReaderContext ctx, Weight weight, Collector collector) throws IOException {
+    protected void searchLeaf(LeafReaderContext ctx, Weight weight, Collector collector) throws IOException {
         cancellable.checkCancelled();
         weight = wrapWeight(weight);
         final LeafCollector leafCollector;
@@ -247,11 +234,6 @@ public class ContextIndexSearcher extends IndexSearcher implements Releasable {
     private Weight wrapWeight(Weight weight) {
         if (cancellable.isEnabled()) {
             return new Weight(weight.getQuery()) {
-                @Override
-                public void extractTerms(Set<Term> terms) {
-                    throw new UnsupportedOperationException();
-                }
-
                 @Override
                 public Explanation explain(LeafReaderContext context, int doc) throws IOException {
                     throw new UnsupportedOperationException();
@@ -299,10 +281,8 @@ public class ContextIndexSearcher extends IndexSearcher implements Releasable {
     static void intersectScorerAndBitSet(Scorer scorer, BitSet acceptDocs,
                                          LeafCollector collector, Runnable checkCancelled) throws IOException {
         collector.setScorer(scorer);
-        // ConjunctionDISI uses the DocIdSetIterator#cost() to order the iterators, so if roleBits has the lowest cardinality it should
-        // be used first:
-        DocIdSetIterator iterator = ConjunctionDISI.intersectIterators(Arrays.asList(new BitSetIterator(acceptDocs,
-            acceptDocs.approximateCardinality()), scorer.iterator()));
+        DocIdSetIterator iterator = intersectIterators(new BitSetIterator(acceptDocs,
+            acceptDocs.approximateCardinality()), scorer.iterator());
         int seen = 0;
         checkCancelled.run();
         for (int docId = iterator.nextDoc(); docId < DocIdSetIterator.NO_MORE_DOCS; docId = iterator.nextDoc()) {
@@ -346,6 +326,48 @@ public class ContextIndexSearcher extends IndexSearcher implements Releasable {
         final IndexReader reader = getIndexReader();
         assert reader instanceof DirectoryReader : "expected an instance of DirectoryReader, got " + reader.getClass();
         return (DirectoryReader) reader;
+    }
+
+    private static DocIdSetIterator intersectIterators(DocIdSetIterator a, DocIdSetIterator b) {
+        return new DocIdSetIterator() {
+            private int doc = -1;
+
+            @Override
+            public int docID() { return doc; }
+
+            @Override
+            public int nextDoc() throws IOException {
+                int docA = a.nextDoc();
+                int docB = b.nextDoc();
+                while (docA != docB) {
+                    if (docA < docB) {
+                        docA = a.advance(docB);
+                    } else {
+                        docB = b.advance(docA);
+                    }
+                }
+                return doc = docA;
+            }
+
+            @Override
+            public int advance(int target) throws IOException {
+                int docA = a.advance(target);
+                int docB = b.advance(target);
+                while (docA != docB) {
+                    if (docA < docB) {
+                        docA = a.advance(docB);
+                    } else {
+                        docB = b.advance(docA);
+                    }
+                }
+                return doc = docA;
+            }
+
+            @Override
+            public long cost() {
+                return Math.min(a.cost(), b.cost());
+            }
+        };
     }
 
     private static class MutableQueryTimeout implements ExitableDirectoryReader.QueryCancellation {

@@ -21,13 +21,14 @@ package org.elasticsearch.index.mapper;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.spatial.prefix.PrefixTreeStrategy;
-import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
-import org.apache.lucene.spatial.prefix.TermQueryPrefixTreeStrategy;
-import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree;
-import org.apache.lucene.spatial.prefix.tree.PackedQuadPrefixTree;
-import org.apache.lucene.spatial.prefix.tree.QuadPrefixTree;
-import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
+// TODO: Lucene 9.x removed lucene-spatial-extras (prefix tree support)
+// import org.apache.lucene.spatial.prefix.PrefixTreeStrategy;
+// import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
+// import org.apache.lucene.spatial.prefix.TermQueryPrefixTreeStrategy;
+// import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree;
+// import org.apache.lucene.spatial.prefix.tree.PackedQuadPrefixTree;
+// import org.apache.lucene.spatial.prefix.tree.QuadPrefixTree;
+// import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.elasticsearch.ElasticsearchParseException;
 import org.elasticsearch.Version;
 import org.elasticsearch.common.Explicit;
@@ -228,35 +229,7 @@ public class LegacyGeoShapeFieldMapper extends AbstractShapeGeometryFieldMapper<
         }
 
         private void setupPrefixTrees(GeoShapeFieldType ft) {
-            SpatialPrefixTree prefixTree;
-            if (ft.tree().equals(DeprecatedParameters.PrefixTrees.GEOHASH)) {
-                prefixTree = new GeohashPrefixTree(ShapeBuilder.SPATIAL_CONTEXT,
-                    getLevels(ft.treeLevels(), ft.precisionInMeters(), DeprecatedParameters.Defaults.GEOHASH_TREE_LEVELS, true));
-            } else if (ft.tree().equals(DeprecatedParameters.PrefixTrees.LEGACY_QUADTREE)) {
-                prefixTree = new QuadPrefixTree(ShapeBuilder.SPATIAL_CONTEXT,
-                    getLevels(ft.treeLevels(), ft.precisionInMeters(), DeprecatedParameters.Defaults.QUADTREE_LEVELS, false));
-            } else if (ft.tree().equals(DeprecatedParameters.PrefixTrees.QUADTREE)) {
-                prefixTree = new PackedQuadPrefixTree(ShapeBuilder.SPATIAL_CONTEXT,
-                    getLevels(ft.treeLevels(), ft.precisionInMeters(), DeprecatedParameters.Defaults.QUADTREE_LEVELS, false));
-            } else {
-                throw new IllegalArgumentException("Unknown prefix tree type [" + ft.tree() + "]");
-            }
-
-            // setup prefix trees regardless of strategy (this is used for the QueryBuilder)
-            // recursive:
-            RecursivePrefixTreeStrategy rpts = new RecursivePrefixTreeStrategy(prefixTree, ft.name());
-            rpts.setDistErrPct(ft.distanceErrorPct());
-            rpts.setPruneLeafyBranches(false);
-            ft.recursiveStrategy = rpts;
-
-            // term:
-            TermQueryPrefixTreeStrategy termStrategy = new TermQueryPrefixTreeStrategy(prefixTree, ft.name());
-            termStrategy.setDistErrPct(ft.distanceErrorPct());
-            ft.termStrategy = termStrategy;
-
-            // set default (based on strategy):
-            ft.defaultPrefixTreeStrategy = ft.resolvePrefixTreeStrategy(ft.strategy());
-            ft.defaultPrefixTreeStrategy.setPointsOnly(ft.pointsOnly());
+            // No-op: Lucene 9.x removed spatial prefix tree support
         }
 
         private GeoShapeFieldType buildFieldType(BuilderContext context) {
@@ -322,10 +295,10 @@ public class LegacyGeoShapeFieldMapper extends AbstractShapeGeometryFieldMapper<
         private Double distanceErrorPct;
         private double defaultDistanceErrorPct = 0.0;
 
-        // these are built when the field type is frozen
-        private PrefixTreeStrategy defaultPrefixTreeStrategy;
-        private RecursivePrefixTreeStrategy recursiveStrategy;
-        private TermQueryPrefixTreeStrategy termStrategy;
+        // Lucene 9.x removed spatial prefix tree support; these fields are retained as Object for structural compatibility
+        private Object defaultPrefixTreeStrategy;
+        private Object recursiveStrategy;
+        private Object termStrategy;
 
         private final LegacyGeoShapeQueryProcessor queryProcessor;
 
@@ -408,22 +381,16 @@ public class LegacyGeoShapeFieldMapper extends AbstractShapeGeometryFieldMapper<
             this.defaultDistanceErrorPct = defaultDistanceErrorPct;
         }
 
-        public PrefixTreeStrategy defaultPrefixTreeStrategy() {
-            return this.defaultPrefixTreeStrategy;
+        public Object defaultPrefixTreeStrategy() {
+            throw new UnsupportedOperationException("Legacy geo shape with spatial prefix tree not supported in Lucene 9.x");
         }
 
-        public PrefixTreeStrategy resolvePrefixTreeStrategy(SpatialStrategy strategy) {
-            return resolvePrefixTreeStrategy(strategy.getStrategyName());
+        public Object resolvePrefixTreeStrategy(SpatialStrategy strategy) {
+            throw new UnsupportedOperationException("Legacy geo shape with spatial prefix tree not supported in Lucene 9.x");
         }
 
-        public PrefixTreeStrategy resolvePrefixTreeStrategy(String strategyName) {
-            if (SpatialStrategy.RECURSIVE.getStrategyName().equals(strategyName)) {
-                return recursiveStrategy;
-            }
-            if (SpatialStrategy.TERM.getStrategyName().equals(strategyName)) {
-                return termStrategy;
-            }
-            throw new IllegalArgumentException("Unknown prefix tree strategy [" + strategyName + "]");
+        public Object resolvePrefixTreeStrategy(String strategyName) {
+            throw new UnsupportedOperationException("Legacy geo shape with spatial prefix tree not supported in Lucene 9.x");
         }
     }
 

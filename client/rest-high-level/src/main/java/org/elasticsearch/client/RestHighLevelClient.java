@@ -79,8 +79,6 @@ import org.elasticsearch.common.xcontent.DeprecationHandler;
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.index.rankeval.RankEvalRequest;
-import org.elasticsearch.index.rankeval.RankEvalResponse;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.index.reindex.ReindexRequest;
@@ -1388,21 +1386,6 @@ public class RestHighLevelClient implements Closeable {
             request, RequestConverters::mtermVectors, options, MultiTermVectorsResponse::fromXContent, listener, emptySet());
     }
 
-
-    /**
-     * Executes a request using the Ranking Evaluation API.
-     * See <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-rank-eval.html">Ranking Evaluation API
-     * on elastic.co</a>
-     * @param rankEvalRequest the request
-     * @param options the request options (e.g. headers), use {@link RequestOptions#DEFAULT} if nothing needs to be customized
-     * @return the response
-     */
-    public final RankEvalResponse rankEval(RankEvalRequest rankEvalRequest, RequestOptions options) throws IOException {
-        return performRequestAndParseEntity(rankEvalRequest, RequestConverters::rankEval, options, RankEvalResponse::fromXContent,
-                emptySet());
-    }
-
-
     /**
      * Executes a request using the Multi Search Template API.
      *
@@ -1427,22 +1410,6 @@ public class RestHighLevelClient implements Closeable {
                                                   ActionListener<MultiSearchTemplateResponse> listener) {
         return performRequestAsyncAndParseEntity(multiSearchTemplateRequest, RequestConverters::multiSearchTemplate,
             options, MultiSearchTemplateResponse::fromXContext, listener, emptySet());
-    }
-
-    /**
-     * Asynchronously executes a request using the Ranking Evaluation API.
-     * See <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-rank-eval.html">Ranking Evaluation API
-     * on elastic.co</a>
-     * @param rankEvalRequest the request
-     * @param options the request options (e.g. headers), use {@link RequestOptions#DEFAULT} if nothing needs to be customized
-     * @param listener the listener to be notified upon request completion
-     * @return cancellable that may be used to cancel the request
-     */
-    public final Cancellable rankEvalAsync(RankEvalRequest rankEvalRequest, RequestOptions options,
-                                           ActionListener<RankEvalResponse> listener) {
-        return performRequestAsyncAndParseEntity(rankEvalRequest, RequestConverters::rankEval, options,
-            RankEvalResponse::fromXContent, listener,
-                emptySet());
     }
 
     /**

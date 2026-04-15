@@ -261,6 +261,11 @@ public enum MissingValues {
             private long nextMissingOrd;
 
             @Override
+            public int docValueCount() {
+                return hasOrds ? values.docValueCount() : 1;
+            }
+
+            @Override
             public BytesRef lookupOrd(long ord) throws IOException {
                 return values.lookupOrd(ord);
             }
@@ -307,6 +312,11 @@ public enum MissingValues {
 
             private boolean hasOrds;
             private long nextMissingOrd;
+
+            @Override
+            public int docValueCount() {
+                return hasOrds ? values.docValueCount() : 1;
+            }
 
             @Override
             public BytesRef lookupOrd(long ord) throws IOException {

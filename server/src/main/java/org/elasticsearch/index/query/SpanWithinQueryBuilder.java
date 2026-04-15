@@ -20,8 +20,9 @@
 package org.elasticsearch.index.query;
 
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.spans.SpanQuery;
-import org.apache.lucene.search.spans.SpanWithinQuery;
+// TODO: Lucene 9.x migration - spans removed
+// import org.apache.lucene.search.spans.SpanQuery;
+// import org.apache.lucene.search.spans.SpanWithinQuery;
 import org.elasticsearch.common.ParseField;
 import org.elasticsearch.common.ParsingException;
 import org.elasticsearch.common.io.stream.StreamInput;
@@ -35,7 +36,7 @@ import java.util.Objects;
 import static org.elasticsearch.index.query.SpanQueryBuilder.SpanQueryBuilderUtil.checkNoBoost;
 
 /**
- * Builder for {@link org.apache.lucene.search.spans.SpanWithinQuery}.
+ * Builder for SpanWithinQuery (removed in Lucene 9.x).
  */
 public class SpanWithinQueryBuilder extends AbstractQueryBuilder<SpanWithinQueryBuilder> implements SpanQueryBuilder {
     public static final String NAME = "span_within";
@@ -157,13 +158,10 @@ public class SpanWithinQueryBuilder extends AbstractQueryBuilder<SpanWithinQuery
         return query;
     }
 
+    // TODO: Lucene 9.x migration - spans removed
     @Override
     protected Query doToQuery(QueryShardContext context) throws IOException {
-        Query innerBig = big.toQuery(context);
-        assert innerBig instanceof SpanQuery;
-        Query innerLittle = little.toQuery(context);
-        assert innerLittle instanceof SpanQuery;
-        return new SpanWithinQuery((SpanQuery) innerBig, (SpanQuery) innerLittle);
+        throw new UnsupportedOperationException("span_within queries are not supported in Lucene 9.x - spans API was removed");
     }
 
     @Override

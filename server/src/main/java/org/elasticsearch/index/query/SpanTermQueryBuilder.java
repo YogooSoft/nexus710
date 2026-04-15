@@ -19,22 +19,22 @@
 
 package org.elasticsearch.index.query;
 
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.spans.SpanQuery;
-import org.apache.lucene.search.spans.SpanTermQuery;
+// TODO: Lucene 9.x migration - spans removed
+// import org.apache.lucene.search.spans.SpanQuery;
+// import org.apache.lucene.search.spans.SpanTermQuery;
 import org.elasticsearch.common.ParseField;
 import org.elasticsearch.common.ParsingException;
 import org.elasticsearch.common.io.stream.StreamInput;
-import org.elasticsearch.common.lucene.BytesRefs;
+// import org.elasticsearch.common.lucene.BytesRefs; // unused after spans removal
 import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.index.mapper.MappedFieldType;
+// import org.elasticsearch.index.mapper.MappedFieldType; // unused after spans removal
 
 import java.io.IOException;
 
 /**
  * A Span Query that matches documents containing a term.
- * @see SpanTermQuery
+ * Previously mapped to SpanTermQuery (removed in Lucene 9.x).
  */
 public class SpanTermQueryBuilder extends BaseTermQueryBuilder<SpanTermQueryBuilder> implements SpanQueryBuilder {
     public static final String NAME = "span_term";
@@ -78,17 +78,10 @@ public class SpanTermQueryBuilder extends BaseTermQueryBuilder<SpanTermQueryBuil
         super(in);
     }
 
+    // TODO: Lucene 9.x migration - spans removed
     @Override
-    protected SpanQuery doToQuery(QueryShardContext context) throws IOException {
-        MappedFieldType mapper = context.fieldMapper(fieldName);
-        Term term;
-        if (mapper == null) {
-            term = new Term(fieldName, BytesRefs.toBytesRef(value));
-        } else {
-            Query termQuery = mapper.termQuery(value, context);
-            term = MappedFieldType.extractTerm(termQuery);
-        }
-        return new SpanTermQuery(term);
+    protected Query doToQuery(QueryShardContext context) throws IOException {
+        throw new UnsupportedOperationException("span_term queries are not supported in Lucene 9.x - spans API was removed");
     }
 
     public static SpanTermQueryBuilder fromXContent(XContentParser parser) throws IOException, ParsingException {

@@ -74,7 +74,6 @@ import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.VersionType;
 import org.elasticsearch.index.mapper.MapperService;
-import org.elasticsearch.index.rankeval.RankEvalRequest;
 import org.elasticsearch.index.reindex.AbstractBulkByScrollRequest;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.index.reindex.ReindexRequest;
@@ -550,17 +549,6 @@ final class RequestConverters {
         if (fieldCapabilitiesRequest.indexFilter() != null) {
             request.setEntity(createEntity(fieldCapabilitiesRequest, REQUEST_BODY_CONTENT_TYPE));
         }
-        return request;
-    }
-
-    static Request rankEval(RankEvalRequest rankEvalRequest) throws IOException {
-        Request request = new Request(HttpGet.METHOD_NAME, endpoint(rankEvalRequest.indices(), Strings.EMPTY_ARRAY, "_rank_eval"));
-
-        Params params = new Params();
-        params.withIndicesOptions(rankEvalRequest.indicesOptions());
-        params.putParam("search_type", rankEvalRequest.searchType().name().toLowerCase(Locale.ROOT));
-        request.addParameters(params.asMap());
-        request.setEntity(createEntity(rankEvalRequest.getRankEvalSpec(), REQUEST_BODY_CONTENT_TYPE));
         return request;
     }
 

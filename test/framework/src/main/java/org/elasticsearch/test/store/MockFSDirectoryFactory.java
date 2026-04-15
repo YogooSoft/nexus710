@@ -22,12 +22,12 @@ package org.elasticsearch.test.store;
 import com.carrotsearch.randomizedtesting.generators.RandomPicks;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.index.CheckIndex;
-import org.apache.lucene.store.BaseDirectoryWrapper;
+import org.apache.lucene.tests.store.BaseDirectoryWrapper;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
-import org.apache.lucene.store.MockDirectoryWrapper;
-import org.apache.lucene.util.LuceneTestCase;
-import org.apache.lucene.util.TestRuleMarkFailure;
+import org.apache.lucene.tests.store.MockDirectoryWrapper;
+import org.apache.lucene.tests.util.LuceneTestCase;
+import org.apache.lucene.tests.util.TestRuleMarkFailure;
 import org.elasticsearch.cluster.metadata.IndexMetadata;
 import org.elasticsearch.common.io.stream.BytesStreamOutput;
 import org.elasticsearch.common.lucene.Lucene;
@@ -112,16 +112,11 @@ public class MockFSDirectoryFactory implements IndexStorePlugin.DirectoryFactory
         double randomIOExceptionRate = RANDOM_IO_EXCEPTION_RATE_SETTING.get(indexSettings);
         double randomIOExceptionRateOnOpen = RANDOM_IO_EXCEPTION_RATE_ON_OPEN_SETTING.get(indexSettings);
         random.nextInt(shardId.getId() + 1); // some randomness per shard
-        MockDirectoryWrapper.Throttling throttle = MockDirectoryWrapper.Throttling.NEVER;
         boolean crashIndex = CRASH_INDEX_SETTING.get(indexSettings);
         final ElasticsearchMockDirectoryWrapper w = new ElasticsearchMockDirectoryWrapper(random, dir, crashIndex);
         w.setRandomIOExceptionRate(randomIOExceptionRate);
         w.setRandomIOExceptionRateOnOpen(randomIOExceptionRateOnOpen);
-        w.setThrottling(throttle);
         w.setCheckIndexOnClose(false); // we do this on the index level
-        // TODO: make this test robust to virus scanner
-        w.setAssertNoDeleteOpenFile(false);
-        w.setUseSlowOpenClosers(false);
         LuceneTestCase.closeAfterSuite(new CloseableDirectory(w));
         return w;
     }

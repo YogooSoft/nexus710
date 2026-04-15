@@ -28,12 +28,14 @@ import org.apache.lucene.codecs.CodecUtil;
 import org.apache.lucene.document.LatLonDocValuesField;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.index.BinaryDocValues;
+import org.apache.lucene.index.ByteVectorValues;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.FilterCodecReader;
+import org.apache.lucene.index.FloatVectorValues;
 import org.apache.lucene.index.FilterDirectoryReader;
 import org.apache.lucene.index.FilterLeafReader;
 import org.apache.lucene.index.IndexCommit;
@@ -55,11 +57,14 @@ import org.apache.lucene.index.SortedDocValues;
 import org.apache.lucene.index.SortedNumericDocValues;
 import org.apache.lucene.index.SortedSetDocValues;
 import org.apache.lucene.index.StoredFieldVisitor;
+import org.apache.lucene.index.StoredFields;
+import org.apache.lucene.index.TermVectors;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.FieldDoc;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.KnnCollector;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.ScoreMode;
@@ -105,7 +110,10 @@ import java.util.List;
 import java.util.Map;
 
 public class Lucene {
-    public static final String LATEST_CODEC = "Lucene87";
+    public static final String LATEST_CODEC = "Lucene912";
+
+    /** Legacy optional commit-generation pointer file; removed from {@link IndexFileNames} in Lucene 9. */
+    public static final String LEGACY_SEGMENTS_GEN = "segments.gen";
 
     public static final String SOFT_DELETES_FIELD = "__soft_deletes";
 
@@ -201,7 +209,7 @@ public class Lucene {
                  * since checksums don's match anymore. that's why we prune the name here directly.
                  * We also want the caller to know if we were not able to remove a segments_N file.
                  */
-                if (file.startsWith(IndexFileNames.SEGMENTS) || file.equals(IndexFileNames.OLD_SEGMENTS_GEN)) {
+                if (file.startsWith(IndexFileNames.SEGMENTS) || file.equals(LEGACY_SEGMENTS_GEN)) {
                     foundSegmentFiles++;
                     if (file.equals(si.getSegmentsFileName()) == false) {
                         directory.deleteFile(file); // remove all segment_N files except of the one we wanna keep
@@ -240,7 +248,7 @@ public class Lucene {
     public static void cleanLuceneIndex(Directory directory) throws IOException {
         try (Lock writeLock = directory.obtainLock(IndexWriter.WRITE_LOCK_NAME)) {
             for (final String file : directory.listAll()) {
-                if (file.startsWith(IndexFileNames.SEGMENTS) || file.equals(IndexFileNames.OLD_SEGMENTS_GEN)) {
+                if (file.startsWith(IndexFileNames.SEGMENTS) || file.equals(LEGACY_SEGMENTS_GEN)) {
                     directory.deleteFile(file); // remove all segment_N files
                 }
             }
@@ -1047,11 +1055,34 @@ public class Lucene {
                 return null;
             }
 
+            public FloatVectorValues getFloatVectorValues(String field) {
+                return null;
+            }
+
+            public ByteVectorValues getByteVectorValues(String field) {
+                return null;
+            }
+
+            public void searchNearestVectors(String field, float[] target, KnnCollector knnCollector, Bits acceptDocs) {
+            }
+
+            public void searchNearestVectors(String field, byte[] target, KnnCollector knnCollector, Bits acceptDocs) {
+            }
+
             public void checkIntegrity() {
             }
 
             public Fields getTermVectors(int docID) {
                 return null;
+            }
+
+            public TermVectors termVectors() {
+                return new TermVectors() {
+                    @Override
+                    public Fields get(int doc) {
+                        return null;
+                    }
+                };
             }
 
             public int numDocs() {
@@ -1065,11 +1096,19 @@ public class Lucene {
             public void document(int docID, StoredFieldVisitor visitor) {
             }
 
+            public StoredFields storedFields() {
+                return new StoredFields() {
+                    @Override
+                    public void document(int docID, StoredFieldVisitor visitor) {
+                    }
+                };
+            }
+
             protected void doClose() {
             }
 
             public LeafMetaData getMetaData() {
-                return new LeafMetaData(Version.LATEST.major, Version.LATEST, null);
+                return new LeafMetaData(Version.LATEST.major, Version.LATEST, null, false);
             }
 
             public CacheHelper getCoreCacheHelper() {

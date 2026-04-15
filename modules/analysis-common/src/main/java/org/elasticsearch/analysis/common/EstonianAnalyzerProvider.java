@@ -37,7 +37,6 @@ public class EstonianAnalyzerProvider extends AbstractIndexAnalyzerProvider<Esto
             Analysis.parseStopWords(env, settings, EstonianAnalyzer.getDefaultStopSet()),
             Analysis.parseStemExclusion(settings, CharArraySet.EMPTY_SET)
         );
-        analyzer.setVersion(version);
     }
 
     @Override

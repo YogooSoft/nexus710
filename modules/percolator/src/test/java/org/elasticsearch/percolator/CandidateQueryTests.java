@@ -50,7 +50,7 @@ import org.apache.lucene.queries.CommonTermsQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.CoveringQuery;
+import org.apache.lucene.sandbox.search.CoveringQuery;
 import org.apache.lucene.search.DisjunctionMaxQuery;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Explanation;
@@ -1187,9 +1187,6 @@ public class CandidateQueryTests extends ESSingleNodeTestCase {
         public Weight createWeight(IndexSearcher searcher, ScoreMode scoreMode, float boost) {
             final IndexSearcher percolatorIndexSearcher = memoryIndex.createSearcher();
             return new Weight(this) {
-
-                @Override
-                public void extractTerms(Set<Term> terms) {}
 
                 @Override
                 public Explanation explain(LeafReaderContext context, int doc) throws IOException {

@@ -20,8 +20,8 @@ package org.elasticsearch.index.fielddata.plain;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.lucene.codecs.blocktree.FieldReader;
-import org.apache.lucene.codecs.blocktree.Stats;
+import org.apache.lucene.codecs.lucene90.blocktree.FieldReader;
+import org.apache.lucene.codecs.lucene90.blocktree.Stats;
 import org.apache.lucene.index.FilteredTermsEnum;
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.LeafReaderContext;
@@ -167,8 +167,8 @@ public class PagedBytesIndexFieldData extends AbstractIndexOrdinalsFieldData {
 
     /**
      * Estimator that wraps string field data by either using
-     * BlockTreeTermsReader, or wrapping the data in a RamAccountingTermsEnum
-     * if the BlockTreeTermsReader cannot be used.
+     * {@link FieldReader} (Lucene block-tree terms) stats, or wrapping the data in a RamAccountingTermsEnum
+     * if those stats cannot be used.
      */
     public class PagedBytesEstimator implements PerValueEstimator {
 
@@ -226,7 +226,7 @@ public class PagedBytesIndexFieldData extends AbstractIndexOrdinalsFieldData {
         }
 
         /**
-         * Determine whether the BlockTreeTermsReader.FieldReader can be used
+         * Determine whether {@link FieldReader} can be used
          * for estimating the field data, adding the estimate to the circuit
          * breaker if it can, otherwise wrapping the terms in a
          * RamAccountingTermsEnum to be estimated on a per-term basis.

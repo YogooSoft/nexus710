@@ -20,8 +20,9 @@
 package org.elasticsearch.index.query;
 
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.spans.SpanNearQuery;
-import org.apache.lucene.search.spans.SpanQuery;
+// TODO: Lucene 9.x migration - spans removed
+// import org.apache.lucene.search.spans.SpanNearQuery;
+// import org.apache.lucene.search.spans.SpanQuery;
 import org.elasticsearch.common.ParseField;
 import org.elasticsearch.common.ParsingException;
 import org.elasticsearch.common.Strings;
@@ -30,7 +31,7 @@ import org.elasticsearch.common.io.stream.StreamOutput;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentLocation;
 import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.index.mapper.MappedFieldType;
+
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,14 +44,14 @@ import static org.elasticsearch.index.query.SpanQueryBuilder.SpanQueryBuilderUti
 /**
  * Matches spans which are near one another. One can specify slop, the maximum number
  * of intervening unmatched positions, as well as whether matches are required to be in-order.
- * The span near query maps to Lucene {@link SpanNearQuery}.
+ * The span near query previously mapped to Lucene SpanNearQuery (removed in Lucene 9.x).
  */
 public class SpanNearQueryBuilder extends AbstractQueryBuilder<SpanNearQueryBuilder> implements SpanQueryBuilder {
     public static final String NAME = "span_near";
 
     /** Default for flag controlling whether matches are required to be in-order */
     public static boolean DEFAULT_IN_ORDER = true;
-    /** Default slop value, this is the same that lucene {@link SpanNearQuery} uses if no slop is provided */
+    /** Default slop value, this is the same that lucene SpanNearQuery uses if no slop is provided */
     public static int DEFAULT_SLOP = 0;
 
     private static final ParseField SLOP_FIELD = new ParseField("slop");
@@ -210,62 +211,8 @@ public class SpanNearQueryBuilder extends AbstractQueryBuilder<SpanNearQueryBuil
 
     @Override
     protected Query doToQuery(QueryShardContext context) throws IOException {
-        SpanQueryBuilder queryBuilder = clauses.get(0);
-        boolean isGap = queryBuilder instanceof SpanGapQueryBuilder;
-        Query query = null;
-        if (!isGap) {
-            query = queryBuilder.toQuery(context);
-            assert query instanceof SpanQuery;
-        }
-        if (clauses.size() == 1) {
-            assert !isGap;
-            return query;
-        }
-        String spanNearFieldName = null;
-        if (isGap) {
-            String fieldName = ((SpanGapQueryBuilder) queryBuilder).fieldName();
-            spanNearFieldName = queryFieldName(context, fieldName);
-        } else {
-            spanNearFieldName = ((SpanQuery) query).getField();
-        }
-
-        SpanNearQuery.Builder builder = new SpanNearQuery.Builder(spanNearFieldName, inOrder);
-        builder.setSlop(slop);
-        /*
-         * Lucene SpanNearQuery throws exceptions for certain use cases like adding gap to a
-         * unordered SpanNearQuery. Should ES have the same checks or wrap those thrown exceptions?
-         */
-        if (isGap) {
-            int gap = ((SpanGapQueryBuilder) queryBuilder).width();
-            builder.addGap(gap);
-        } else {
-            builder.addClause((SpanQuery) query);
-        }
-
-        for (int i = 1; i < clauses.size(); i++) {
-            queryBuilder = clauses.get(i);
-            isGap = queryBuilder instanceof SpanGapQueryBuilder;
-            if (isGap) {
-                String fieldName = ((SpanGapQueryBuilder) queryBuilder).fieldName();
-                String spanGapFieldName = queryFieldName(context, fieldName);
-
-                if (!spanNearFieldName.equals(spanGapFieldName)) {
-                    throw new IllegalArgumentException("[span_near] clauses must have same field");
-                }
-                int gap = ((SpanGapQueryBuilder) queryBuilder).width();
-                builder.addGap(gap);
-            } else {
-                query = clauses.get(i).toQuery(context);
-                assert query instanceof SpanQuery;
-                builder.addClause((SpanQuery)query);
-            }
-        }
-        return builder.build();
-    }
-
-    private String queryFieldName(QueryShardContext context, String fieldName) {
-        MappedFieldType fieldType = context.fieldMapper(fieldName);
-        return fieldType != null ? fieldType.name() : fieldName;
+        // TODO: Lucene 9.x migration - SpanNearQuery and SpanQuery removed from Lucene
+        throw new UnsupportedOperationException("span_near queries are not supported in Lucene 9.x - spans API was removed");
     }
 
     @Override

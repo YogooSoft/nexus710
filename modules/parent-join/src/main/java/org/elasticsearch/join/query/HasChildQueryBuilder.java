@@ -24,6 +24,7 @@ import org.apache.lucene.index.OrdinalMap;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchNoDocsQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryVisitor;
 import org.apache.lucene.search.join.JoinUtil;
 import org.apache.lucene.search.join.ScoreMode;
 import org.apache.lucene.search.similarities.Similarity;
@@ -414,6 +415,11 @@ public class HasChildQueryBuilder extends AbstractQueryBuilder<HasChildQueryBuil
         @Override
         public int hashCode() {
             return Objects.hash(getClass(), toQuery, innerQuery, minChildren, maxChildren, joinField, scoreMode);
+        }
+
+        @Override
+        public void visit(QueryVisitor visitor) {
+            visitor.visitLeaf(this);
         }
 
         @Override

@@ -21,13 +21,13 @@ package org.elasticsearch.plugins;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.lucene.analysis.util.CharFilterFactory;
-import org.apache.lucene.analysis.util.TokenFilterFactory;
-import org.apache.lucene.analysis.util.TokenizerFactory;
+import org.apache.lucene.analysis.CharFilterFactory;
+import org.apache.lucene.analysis.TokenFilterFactory;
+import org.apache.lucene.analysis.TokenizerFactory;
 import org.apache.lucene.codecs.Codec;
 import org.apache.lucene.codecs.DocValuesFormat;
 import org.apache.lucene.codecs.PostingsFormat;
-import org.apache.lucene.util.SPIClassIterator;
+import java.util.ServiceLoader;
 import org.elasticsearch.Build;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.Version;
@@ -513,12 +513,13 @@ public class PluginsService implements ReportingService<PluginsAndModules> {
     }
 
     private static <T> List<? extends T> createExtensions(Class<T> extensionPointType, Plugin plugin) {
-        SPIClassIterator<T> classIterator = SPIClassIterator.get(extensionPointType, plugin.getClass().getClassLoader());
         List<T> extensions = new ArrayList<>();
-        while (classIterator.hasNext()) {
-            Class<? extends T> extensionClass = classIterator.next();
-            extensions.add(createExtension(extensionClass, extensionPointType, plugin));
-        }
+        ServiceLoader.load(extensionPointType, plugin.getClass().getClassLoader())
+            .stream()
+            .forEach(provider -> {
+                Class<? extends T> extensionClass = provider.type();
+                extensions.add(createExtension(extensionClass, extensionPointType, plugin));
+            });
         return extensions;
     }
 

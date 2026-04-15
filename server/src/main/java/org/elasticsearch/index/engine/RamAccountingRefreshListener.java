@@ -22,6 +22,7 @@ package org.elasticsearch.index.engine;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.SegmentReader;
+import org.apache.lucene.util.Accountable;
 import org.elasticsearch.common.breaker.CircuitBreaker;
 import org.elasticsearch.common.lucene.Lucene;
 import org.elasticsearch.common.lucene.index.ElasticsearchDirectoryReader;
@@ -69,7 +70,7 @@ final class RamAccountingRefreshListener implements BiConsumer<ElasticsearchDire
             // don't add the segment's memory unless it is not referenced by the previous reader
             // (only new segments)
             if (prevReaders.contains(segmentReader.getCoreCacheHelper().getKey()) == false) {
-                final long ramBytesUsed = segmentReader.ramBytesUsed();
+                final long ramBytesUsed = estimateRamBytesUsed(segmentReader);
                 // add the segment memory to the breaker (non-breaking)
                 breaker.addWithoutBreaking(ramBytesUsed);
                 // and register a listener for when the segment is closed to decrement the
@@ -77,5 +78,23 @@ final class RamAccountingRefreshListener implements BiConsumer<ElasticsearchDire
                 segmentReader.getCoreCacheHelper().addClosedListener(k -> breaker.addWithoutBreaking(-ramBytesUsed));
             }
         }
+    }
+
+    private static long estimateRamBytesUsed(SegmentReader reader) {
+        long total = 0;
+        total += guardedRamBytesUsed(reader.getPostingsReader());
+        total += guardedRamBytesUsed(reader.getFieldsReader());
+        total += guardedRamBytesUsed(reader.getTermVectorsReader());
+        total += guardedRamBytesUsed(reader.getNormsReader());
+        total += guardedRamBytesUsed(reader.getPointsReader());
+        total += guardedRamBytesUsed(reader.getDocValuesReader());
+        return total;
+    }
+
+    private static long guardedRamBytesUsed(Object component) {
+        if (component instanceof Accountable) {
+            return ((Accountable) component).ramBytesUsed();
+        }
+        return 0;
     }
 }

@@ -37,11 +37,12 @@ import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
-import org.apache.lucene.search.spans.SpanNearQuery;
-import org.apache.lucene.search.spans.SpanOrQuery;
-import org.apache.lucene.search.spans.SpanQuery;
-import org.apache.lucene.search.spans.SpanTermQuery;
+// TODO: Lucene 9.x migration - spans removed
+// import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
+// import org.apache.lucene.search.spans.SpanNearQuery;
+// import org.apache.lucene.search.spans.SpanOrQuery;
+// import org.apache.lucene.search.spans.SpanQuery;
+// import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.util.QueryBuilder;
 import org.apache.lucene.util.graph.GraphTokenStreamFiniteStrings;
 import org.elasticsearch.ElasticsearchException;
@@ -50,7 +51,8 @@ import org.elasticsearch.common.io.stream.StreamOutput;
 import org.elasticsearch.common.io.stream.Writeable;
 import org.elasticsearch.common.lucene.Lucene;
 import org.elasticsearch.common.lucene.search.Queries;
-import org.elasticsearch.common.lucene.search.SpanBooleanQueryRewriteWithMaxClause;
+// TODO: Lucene 9.x migration - spans removed
+// import org.elasticsearch.common.lucene.search.SpanBooleanQueryRewriteWithMaxClause;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.mapper.KeywordFieldMapper;
 import org.elasticsearch.index.mapper.MappedFieldType;
@@ -162,8 +164,9 @@ public class MatchQuery {
 
     protected int maxExpansions = FuzzyQuery.defaultMaxExpansions;
 
-    protected SpanMultiTermQueryWrapper.SpanRewriteMethod spanRewriteMethod =
-        new SpanBooleanQueryRewriteWithMaxClause(FuzzyQuery.defaultMaxExpansions, false);
+    // TODO: Lucene 9.x migration - spans removed
+    // protected SpanMultiTermQueryWrapper.SpanRewriteMethod spanRewriteMethod =
+    //     new SpanBooleanQueryRewriteWithMaxClause(FuzzyQuery.defaultMaxExpansions, false);
 
     protected boolean transpositions = FuzzyQuery.defaultTranspositions;
 
@@ -197,7 +200,7 @@ public class MatchQuery {
     }
 
     /**
-     * @deprecated See {@link MatchQueryBuilder#setCommonTermsCutoff(Float)} for more details
+     * @deprecated Common terms query is no longer supported. This is a no-op.
      */
     @Deprecated
     public void setCommonTermsCutoff(Float cutoff) {
@@ -222,7 +225,8 @@ public class MatchQuery {
 
     public void setMaxExpansions(int maxExpansions) {
         this.maxExpansions = maxExpansions;
-        this.spanRewriteMethod = new SpanBooleanQueryRewriteWithMaxClause(maxExpansions, false);
+        // TODO: Lucene 9.x migration - spans removed
+        // this.spanRewriteMethod = new SpanBooleanQueryRewriteWithMaxClause(maxExpansions, false);
     }
 
     public void setTranspositions(boolean transpositions) {
@@ -509,6 +513,8 @@ public class MatchQuery {
             }
         }
 
+        // TODO: Lucene 9.x migration - spans removed
+        /*
         private SpanQuery newSpanQuery(Term[] terms, boolean isPrefix) {
             if (terms.length == 1) {
                 return isPrefix ? fieldType.spanPrefixQuery(terms[0].text(), spanRewriteMethod, context) : new SpanTermQuery(terms[0]);
@@ -520,7 +526,10 @@ public class MatchQuery {
             }
             return new SpanOrQuery(spanQueries);
         }
+        */
 
+        // TODO: Lucene 9.x migration - spans removed
+        /*
         @Override
         protected SpanQuery createSpanQuery(TokenStream in, String field) throws IOException {
             return createSpanQuery(in, field, false);
@@ -557,6 +566,7 @@ public class MatchQuery {
                 return query;
             }
         }
+        */
 
         @Override
         protected Query newTermQuery(Term term, float boost) {
@@ -627,9 +637,9 @@ public class MatchQuery {
             } else {
                 // We don't apply prefix on synonyms
                 final TermAndBoost[] termAndBoosts = current.stream()
-                    .map(t -> new TermAndBoost(t, BoostAttribute.DEFAULT_BOOST))
+                    .map(t -> new TermAndBoost(t.bytes(), BoostAttribute.DEFAULT_BOOST))
                     .toArray(TermAndBoost[]::new);
-                q.add(newSynonymQuery(termAndBoosts), operator);
+                q.add(newSynonymQuery(field, termAndBoosts), operator);
             }
         }
 
@@ -744,9 +754,9 @@ public class MatchQuery {
                     } else {
                         // We don't apply prefix on synonyms
                         final TermAndBoost[] termAndBoosts = Arrays.stream(terms)
-                            .map(t -> new TermAndBoost(t, BoostAttribute.DEFAULT_BOOST))
+                            .map(t -> new TermAndBoost(t.bytes(), BoostAttribute.DEFAULT_BOOST))
                             .toArray(TermAndBoost[]::new);
-                        queryPos = newSynonymQuery(termAndBoosts);
+                        queryPos = newSynonymQuery(field, termAndBoosts);
                     }
                 }
                 if (queryPos != null) {
@@ -777,66 +787,10 @@ public class MatchQuery {
                 return builder.build();
             }
 
-            /*
-             * Creates a span near (phrase) query from a graph token stream.
-             * The articulation points of the graph are visited in order and the queries
-             * created at each point are merged in the returned near query.
-             */
-            List<SpanQuery> clauses = new ArrayList<>();
-            int[] articulationPoints = graph.articulationPoints();
-            int lastState = 0;
-            int maxClauseCount = BooleanQuery.getMaxClauseCount();
-            for (int i = 0; i <= articulationPoints.length; i++) {
-                int start = lastState;
-                int end = -1;
-                if (i < articulationPoints.length) {
-                    end = articulationPoints[i];
-                }
-                lastState = end;
-                final SpanQuery queryPos;
-                boolean usePrefix = end == -1 && type == Type.PHRASE_PREFIX;
-                if (graph.hasSidePath(start)) {
-                    List<SpanQuery> queries = new ArrayList<>();
-                    Iterator<TokenStream> it = graph.getFiniteStrings(start, end);
-                    while (it.hasNext()) {
-                        TokenStream ts = it.next();
-                        SpanQuery q = createSpanQuery(ts, field, usePrefix);
-                        if (q != null) {
-                            if (queries.size() >= maxClauseCount) {
-                                throw new BooleanQuery.TooManyClauses();
-                            }
-                            queries.add(q);
-                        }
-                    }
-                    if (queries.size() > 0) {
-                        queryPos = new SpanOrQuery(queries.toArray(new SpanQuery[0]));
-                    } else {
-                        queryPos = null;
-                    }
-                } else {
-                    Term[] terms = graph.getTerms(field, start);
-                    assert terms.length > 0;
-                    if (terms.length >= maxClauseCount) {
-                        throw new BooleanQuery.TooManyClauses();
-                    }
-                    queryPos = newSpanQuery(terms, usePrefix);
-                }
-
-                if (queryPos != null) {
-                    if (clauses.size() >= maxClauseCount) {
-                        throw new BooleanQuery.TooManyClauses();
-                    }
-                    clauses.add(queryPos);
-                }
-            }
-
-            if (clauses.isEmpty()) {
-                return null;
-            } else if (clauses.size() == 1) {
-                return clauses.get(0);
-            } else {
-                return new SpanNearQuery(clauses.toArray(new SpanQuery[0]), 0, true);
-            }
+            // TODO: Lucene 9.x migration - spans removed
+            // The span-based graph phrase query path (for phraseSlop == 0) is no longer available.
+            // Fall back to returning null which will be handled by the caller.
+            return null;
         }
 
         private void checkForPositions(String field) {

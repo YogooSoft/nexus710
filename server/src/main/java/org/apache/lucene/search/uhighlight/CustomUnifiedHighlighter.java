@@ -23,23 +23,24 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.PrefixQuery;
+// import org.apache.lucene.search.PrefixQuery; // unused after spans removal
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
-import org.apache.lucene.search.spans.SpanNearQuery;
-import org.apache.lucene.search.spans.SpanOrQuery;
-import org.apache.lucene.search.spans.SpanQuery;
-import org.apache.lucene.search.spans.SpanTermQuery;
+// TODO: Lucene 9.x migration - spans removed
+// import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
+// import org.apache.lucene.search.spans.SpanNearQuery;
+// import org.apache.lucene.search.spans.SpanOrQuery;
+// import org.apache.lucene.search.spans.SpanQuery;
+// import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.common.CheckedSupplier;
 import org.elasticsearch.common.Nullable;
-import org.elasticsearch.common.lucene.search.MultiPhrasePrefixQuery;
+// import org.elasticsearch.common.lucene.search.MultiPhrasePrefixQuery; // unused after spans removal
 import org.elasticsearch.index.IndexSettings;
 
 import java.io.IOException;
 import java.text.BreakIterator;
 import java.util.Collection;
-import java.util.Collections;
+// import java.util.Collections; // unused after spans removal
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -191,44 +192,10 @@ public class CustomUnifiedHighlighter extends UnifiedHighlighter {
      * Translate custom queries in queries that are supported by the unified highlighter.
      */
     private Collection<Query> rewriteCustomQuery(Query query) {
-        if (query instanceof MultiPhrasePrefixQuery) {
-            MultiPhrasePrefixQuery mpq = (MultiPhrasePrefixQuery) query;
-            Term[][] terms = mpq.getTerms();
-            int[] positions = mpq.getPositions();
-            SpanQuery[] positionSpanQueries = new SpanQuery[positions.length];
-            int sizeMinus1 = terms.length - 1;
-            for (int i = 0; i < positions.length; i++) {
-                SpanQuery[] innerQueries = new SpanQuery[terms[i].length];
-                for (int j = 0; j < terms[i].length; j++) {
-                    if (i == sizeMinus1) {
-                        innerQueries[j] = new SpanMultiTermQueryWrapper<>(new PrefixQuery(terms[i][j]));
-                    } else {
-                        innerQueries[j] = new SpanTermQuery(terms[i][j]);
-                    }
-                }
-                if (innerQueries.length > 1) {
-                    positionSpanQueries[i] = new SpanOrQuery(innerQueries);
-                } else {
-                    positionSpanQueries[i] = innerQueries[0];
-                }
-            }
-
-            if (positionSpanQueries.length == 1) {
-                return Collections.singletonList(positionSpanQueries[0]);
-            }
-            // sum position increments beyond 1
-            int positionGaps = 0;
-            if (positions.length >= 2) {
-                // positions are in increasing order.   max(0,...) is just a safeguard.
-                positionGaps = Math.max(0, positions[positions.length - 1] - positions[0] - positions.length + 1);
-            }
-            //if original slop is 0 then require inOrder
-            boolean inorder = (mpq.getSlop() == 0);
-            return Collections.singletonList(new SpanNearQuery(positionSpanQueries,
-                mpq.getSlop() + positionGaps, inorder));
-        } else {
-            return null;
-        }
+        // TODO: Lucene 9.x migration - spans removed
+        // MultiPhrasePrefixQuery rewriting to SpanNearQuery is no longer possible.
+        // Return null to fall back to default highlighting behavior.
+        return null;
     }
 
     /**

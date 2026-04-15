@@ -73,22 +73,13 @@ final class EsTieredMergePolicy extends FilterMergePolicy {
         return regularMergePolicy.getFloorSegmentMB();
     }
 
+    @SuppressWarnings("unused")
     public void setMaxMergeAtOnce(int maxMergeAtOnce) {
-        regularMergePolicy.setMaxMergeAtOnce(maxMergeAtOnce);
-        forcedMergePolicy.setMaxMergeAtOnce(maxMergeAtOnce);
     }
 
+    @SuppressWarnings("unused")
     public int getMaxMergeAtOnce() {
-        return regularMergePolicy.getMaxMergeAtOnce();
-    }
-
-    public void setMaxMergeAtOnceExplicit(int maxMergeAtOnceExplicit) {
-        regularMergePolicy.setMaxMergeAtOnceExplicit(maxMergeAtOnceExplicit);
-        forcedMergePolicy.setMaxMergeAtOnceExplicit(maxMergeAtOnceExplicit);
-    }
-
-    public int getMaxMergeAtOnceExplicit() {
-        return forcedMergePolicy.getMaxMergeAtOnceExplicit();
+        return -1;
     }
 
     // only setter that must NOT delegate to the forced merge policy
@@ -109,12 +100,4 @@ final class EsTieredMergePolicy extends FilterMergePolicy {
         return regularMergePolicy.getSegmentsPerTier();
     }
 
-    public void setDeletesPctAllowed(double deletesPctAllowed) {
-        regularMergePolicy.setDeletesPctAllowed(deletesPctAllowed);
-        forcedMergePolicy.setDeletesPctAllowed(deletesPctAllowed);
-    }
-
-    public double getDeletesPctAllowed() {
-        return regularMergePolicy.getDeletesPctAllowed();
-    }
 }

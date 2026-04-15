@@ -27,7 +27,7 @@ import org.apache.lucene.store.ChecksumIndexInput;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
-import org.apache.lucene.store.SimpleFSDirectory;
+import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.util.SetOnce;
 import org.elasticsearch.cli.ExitCodes;
 import org.elasticsearch.cli.UserException;
@@ -51,6 +51,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AccessDeniedException;
@@ -216,7 +217,7 @@ public class KeyStoreWrapper implements SecureSettings {
             return null;
         }
 
-        SimpleFSDirectory directory = new SimpleFSDirectory(configDir);
+        NIOFSDirectory directory = new NIOFSDirectory(configDir);
         try (IndexInput indexInput = directory.openInput(KEYSTORE_FILENAME, IOContext.READONCE)) {
             ChecksumIndexInput input = new BufferedChecksumIndexInput(indexInput);
             final int formatVersion;
@@ -340,21 +341,23 @@ public class KeyStoreWrapper implements SecureSettings {
         final byte[] salt;
         final byte[] iv;
         final byte[] encryptedBytes;
-        try (ByteArrayInputStream bytesStream = new ByteArrayInputStream(dataBytes);
-             DataInputStream input = new DataInputStream(bytesStream)) {
-            int saltLen = input.readInt();
+        // Lucene 9+ writes ints in little-endian byte order, so use ByteBuffer
+        // instead of DataInputStream (which reads big-endian)
+        try {
+            ByteBuffer byteBuffer = ByteBuffer.wrap(dataBytes).order(ByteOrder.LITTLE_ENDIAN);
+            int saltLen = byteBuffer.getInt();
             salt = new byte[saltLen];
-            input.readFully(salt);
-            int ivLen = input.readInt();
+            byteBuffer.get(salt);
+            int ivLen = byteBuffer.getInt();
             iv = new byte[ivLen];
-            input.readFully(iv);
-            int encryptedLen = input.readInt();
+            byteBuffer.get(iv);
+            int encryptedLen = byteBuffer.getInt();
             encryptedBytes = new byte[encryptedLen];
-            input.readFully(encryptedBytes);
-            if (input.read() != -1) {
+            byteBuffer.get(encryptedBytes);
+            if (byteBuffer.hasRemaining()) {
                 throw new SecurityException("Keystore has been corrupted or tampered with");
             }
-        } catch (EOFException e) {
+        } catch (java.nio.BufferUnderflowException e) {
             throw new SecurityException("Keystore has been corrupted or tampered with", e);
         }
 
@@ -482,7 +485,7 @@ public class KeyStoreWrapper implements SecureSettings {
     public synchronized void save(Path configDir, char[] password) throws Exception {
         ensureOpen();
 
-        SimpleFSDirectory directory = new SimpleFSDirectory(configDir);
+        NIOFSDirectory directory = new NIOFSDirectory(configDir);
         // write to tmp file first, then overwrite
         String tmpFile = KEYSTORE_FILENAME + ".tmp";
         try (IndexOutput output = directory.createOutput(tmpFile, IOContext.DEFAULT)) {

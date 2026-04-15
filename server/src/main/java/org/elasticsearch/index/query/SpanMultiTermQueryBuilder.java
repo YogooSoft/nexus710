@@ -18,24 +18,25 @@
  */
 package org.elasticsearch.index.query;
 
-import org.apache.lucene.queries.SpanMatchNoDocsQuery;
-import org.apache.lucene.search.BoostQuery;
-import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.MatchNoDocsQuery;
-import org.apache.lucene.search.MultiTermQuery;
+// TODO: Lucene 9.x migration - spans removed
+// import org.apache.lucene.queries.SpanMatchNoDocsQuery;
+// import org.apache.lucene.search.BoostQuery; // unused after spans removal
+// import org.apache.lucene.search.ConstantScoreQuery; // unused after spans removal
+// import org.apache.lucene.search.MatchNoDocsQuery; // unused after spans removal
+// import org.apache.lucene.search.MultiTermQuery; // unused after spans removal
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TopTermsRewrite;
-import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
+// import org.apache.lucene.search.TopTermsRewrite;
+// import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
 import org.elasticsearch.common.ParseField;
 import org.elasticsearch.common.ParsingException;
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
-import org.elasticsearch.common.lucene.search.SpanBooleanQueryRewriteWithMaxClause;
-import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
+// import org.elasticsearch.common.lucene.search.SpanBooleanQueryRewriteWithMaxClause;
+// import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.index.mapper.MappedFieldType;
-import org.elasticsearch.index.query.support.QueryParsers;
+// import org.elasticsearch.index.mapper.MappedFieldType;
+// import org.elasticsearch.index.query.support.QueryParsers;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -124,58 +125,10 @@ public class SpanMultiTermQueryBuilder extends AbstractQueryBuilder<SpanMultiTer
         return new SpanMultiTermQueryBuilder(subQuery).queryName(queryName).boost(boost);
     }
 
+    // TODO: Lucene 9.x migration - spans removed
     @Override
     protected Query doToQuery(QueryShardContext context) throws IOException {
-        // We do the rewrite in toQuery to not have to deal with the case when a multi-term builder rewrites to a non-multi-term
-        // builder.
-        QueryBuilder multiTermQueryBuilder = Rewriteable.rewrite(this.multiTermQueryBuilder, context);
-        if (multiTermQueryBuilder instanceof MatchNoneQueryBuilder) {
-            return new SpanMatchNoDocsQuery(this.multiTermQueryBuilder.fieldName(), "Inner query rewrote to match_none");
-        } else if (multiTermQueryBuilder instanceof PrefixQueryBuilder) {
-            PrefixQueryBuilder prefixBuilder = (PrefixQueryBuilder) multiTermQueryBuilder;
-            MappedFieldType fieldType = context.fieldMapper(prefixBuilder.fieldName());
-            if (fieldType == null) {
-                throw new IllegalStateException("Rewrite first");
-            }
-            final SpanMultiTermQueryWrapper.SpanRewriteMethod spanRewriteMethod;
-            if (prefixBuilder.rewrite() != null) {
-                MultiTermQuery.RewriteMethod rewriteMethod =
-                    QueryParsers.parseRewriteMethod(prefixBuilder.rewrite(), null, LoggingDeprecationHandler.INSTANCE);
-                if (rewriteMethod instanceof TopTermsRewrite) {
-                    TopTermsRewrite<?> innerRewrite = (TopTermsRewrite<?>) rewriteMethod;
-                    spanRewriteMethod = new SpanMultiTermQueryWrapper.TopTermsSpanBooleanQueryRewrite(innerRewrite.getSize());
-                } else {
-                    spanRewriteMethod = new SpanBooleanQueryRewriteWithMaxClause();
-                }
-            } else {
-                spanRewriteMethod = new SpanBooleanQueryRewriteWithMaxClause();
-            }
-            return fieldType.spanPrefixQuery(prefixBuilder.value(), spanRewriteMethod, context);
-        } else {
-            Query subQuery = multiTermQueryBuilder.toQuery(context);
-            while (true) {
-                if (subQuery instanceof ConstantScoreQuery) {
-                    subQuery = ((ConstantScoreQuery) subQuery).getQuery();
-                } else if (subQuery instanceof BoostQuery) {
-                    BoostQuery boostQuery = (BoostQuery) subQuery;
-                    subQuery = boostQuery.getQuery();
-                } else {
-                    break;
-                }
-            }
-            if (subQuery instanceof MatchNoDocsQuery) {
-                return new SpanMatchNoDocsQuery(this.multiTermQueryBuilder.fieldName(), subQuery.toString());
-            } else if (subQuery instanceof MultiTermQuery == false) {
-                throw new UnsupportedOperationException("unsupported inner query, should be "
-                    + MultiTermQuery.class.getName() + " but was " + subQuery.getClass().getName());
-            }
-            MultiTermQuery multiTermQuery = (MultiTermQuery) subQuery;
-            SpanMultiTermQueryWrapper<?> wrapper = new SpanMultiTermQueryWrapper<>(multiTermQuery);
-            if (multiTermQuery.getRewriteMethod() instanceof TopTermsRewrite == false) {
-                wrapper.setRewriteMethod(new SpanBooleanQueryRewriteWithMaxClause());
-            }
-            return wrapper;
-        }
+        throw new UnsupportedOperationException("span_multi queries are not supported in Lucene 9.x - spans API was removed");
     }
 
     @Override

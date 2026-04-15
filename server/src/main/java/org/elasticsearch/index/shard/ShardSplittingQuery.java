@@ -32,6 +32,7 @@ import org.apache.lucene.search.ConstantScoreWeight;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryVisitor;
 import org.apache.lucene.search.ScoreMode;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TwoPhaseIterator;
@@ -180,6 +181,11 @@ final class ShardSplittingQuery extends Query {
     }
 
     @Override
+    public void visit(QueryVisitor visitor) {
+        visitor.visitLeaf(this);
+    }
+
+    @Override
     public String toString(String field) {
         return "shard_splitting_query";
     }
@@ -224,7 +230,6 @@ final class ShardSplittingQuery extends Query {
     private final class Visitor extends StoredFieldVisitor {
         final LeafReader leafReader;
         private int leftToVisit = 2;
-        private final BytesRef spare = new BytesRef();
         private String routing;
         private String id;
 
@@ -244,13 +249,10 @@ final class ShardSplittingQuery extends Query {
         }
 
         @Override
-        public void stringField(FieldInfo fieldInfo, byte[] value) throws IOException {
-            spare.bytes = value;
-            spare.offset = 0;
-            spare.length = value.length;
+        public void stringField(FieldInfo fieldInfo, String value) throws IOException {
             switch (fieldInfo.name) {
                 case RoutingFieldMapper.NAME:
-                    routing = spare.utf8ToString();
+                    routing = value;
                     break;
                 default:
                     throw new IllegalStateException("Unexpected field: " + fieldInfo.name);

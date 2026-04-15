@@ -77,11 +77,6 @@ import org.elasticsearch.index.mapper.MapperService;
 import org.elasticsearch.index.query.MatchAllQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
-import org.elasticsearch.index.rankeval.PrecisionAtK;
-import org.elasticsearch.index.rankeval.RankEvalRequest;
-import org.elasticsearch.index.rankeval.RankEvalSpec;
-import org.elasticsearch.index.rankeval.RatedRequest;
-import org.elasticsearch.index.rankeval.RestRankEvalAction;
 import org.elasticsearch.index.reindex.AbstractBulkByScrollRequest;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.index.reindex.ReindexRequest;
@@ -1738,32 +1733,6 @@ public class RequestConvertersTests extends ESTestCase {
 
         assertNotNull(request.getEntity());
         assertToXContentBody(fieldCapabilitiesRequest, request.getEntity());
-    }
-
-    public void testRankEval() throws Exception {
-        RankEvalSpec spec = new RankEvalSpec(
-                Collections.singletonList(new RatedRequest("queryId", Collections.emptyList(), new SearchSourceBuilder())),
-                new PrecisionAtK());
-        String[] indices = randomIndicesNames(0, 5);
-        RankEvalRequest rankEvalRequest = new RankEvalRequest(spec, indices);
-        Map<String, String> expectedParams = new HashMap<>();
-        setRandomIndicesOptions(rankEvalRequest::indicesOptions, rankEvalRequest::indicesOptions, expectedParams);
-        if (randomBoolean()) {
-            rankEvalRequest.searchType(randomFrom(SearchType.CURRENTLY_SUPPORTED));
-        }
-        expectedParams.put("search_type", rankEvalRequest.searchType().name().toLowerCase(Locale.ROOT));
-
-        Request request = RequestConverters.rankEval(rankEvalRequest);
-        StringJoiner endpoint = new StringJoiner("/", "/", "");
-        String index = String.join(",", indices);
-        if (Strings.hasLength(index)) {
-            endpoint.add(index);
-        }
-        endpoint.add(RestRankEvalAction.ENDPOINT);
-        assertEquals(endpoint.toString(), request.getEndpoint());
-        assertEquals(5, request.getParameters().size());
-        assertEquals(expectedParams, request.getParameters());
-        assertToXContentBody(spec, request.getEntity());
     }
 
     public void testPutScript() throws Exception {

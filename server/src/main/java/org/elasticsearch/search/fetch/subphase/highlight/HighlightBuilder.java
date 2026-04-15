@@ -92,12 +92,15 @@ public class HighlightBuilder extends AbstractHighlighterBuilder<HighlightBuilde
     /**
      * a {@link FieldOptions} with default settings
      */
+    static final Character[] DEFAULT_BOUNDARY_CHARS_CHARACTER_ARRAY =
+        convertCharArray(SimpleBoundaryScanner.DEFAULT_BOUNDARY_CHARS);
+
     static final FieldOptions defaultOptions = new SearchHighlightContext.FieldOptions.Builder()
             .preTags(DEFAULT_PRE_TAGS).postTags(DEFAULT_POST_TAGS).scoreOrdered(DEFAULT_SCORE_ORDERED)
             .highlightFilter(DEFAULT_HIGHLIGHT_FILTER).requireFieldMatch(DEFAULT_REQUIRE_FIELD_MATCH)
             .forceSource(DEFAULT_FORCE_SOURCE).fragmentCharSize(DEFAULT_FRAGMENT_CHAR_SIZE)
             .numberOfFragments(DEFAULT_NUMBER_OF_FRAGMENTS).encoder(DEFAULT_ENCODER)
-            .boundaryMaxScan(SimpleBoundaryScanner.DEFAULT_MAX_SCAN).boundaryChars(SimpleBoundaryScanner.DEFAULT_BOUNDARY_CHARS)
+            .boundaryMaxScan(SimpleBoundaryScanner.DEFAULT_MAX_SCAN).boundaryChars(DEFAULT_BOUNDARY_CHARS_CHARACTER_ARRAY)
             .boundaryScannerLocale(Locale.ROOT).noMatchSize(DEFAULT_NO_MATCH_SIZE).phraseLimit(DEFAULT_PHRASE_LIMIT).build();
 
     private final List<Field> fields;

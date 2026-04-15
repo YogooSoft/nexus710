@@ -28,7 +28,6 @@ import org.apache.lucene.search.similarities.BasicModelIF;
 import org.apache.lucene.search.similarities.BasicModelIn;
 import org.apache.lucene.search.similarities.BasicModelIne;
 import org.apache.lucene.search.similarities.BooleanSimilarity;
-import org.apache.lucene.search.similarities.ClassicSimilarity;
 import org.apache.lucene.search.similarities.DFISimilarity;
 import org.apache.lucene.search.similarities.DFRSimilarity;
 import org.apache.lucene.search.similarities.Distribution;
@@ -49,7 +48,8 @@ import org.apache.lucene.search.similarities.NormalizationH1;
 import org.apache.lucene.search.similarities.NormalizationH2;
 import org.apache.lucene.search.similarities.NormalizationH3;
 import org.apache.lucene.search.similarities.NormalizationZ;
-import org.apache.lucene.search.similarity.LegacyBM25Similarity;
+import org.apache.lucene.search.similarities.BM25Similarity;
+import org.apache.lucene.search.similarities.Similarity;
 import org.elasticsearch.Version;
 import org.elasticsearch.common.logging.DeprecationLogger;
 import org.elasticsearch.common.settings.Settings;
@@ -269,16 +269,13 @@ final class SimilarityProviders {
         }
     }
 
-    public static LegacyBM25Similarity createBM25Similarity(Settings settings, Version indexCreatedVersion) {
+    public static BM25Similarity createBM25Similarity(Settings settings, Version indexCreatedVersion) {
         assertSettingsIsSubsetOf("BM25", indexCreatedVersion, settings, "k1", "b", DISCOUNT_OVERLAPS);
 
         float k1 = settings.getAsFloat("k1", 1.2f);
         float b = settings.getAsFloat("b", 0.75f);
-        boolean discountOverlaps = settings.getAsBoolean(DISCOUNT_OVERLAPS, true);
 
-        LegacyBM25Similarity similarity = new LegacyBM25Similarity(k1, b);
-        similarity.setDiscountOverlaps(discountOverlaps);
-        return similarity;
+        return new BM25Similarity(k1, b);
     }
 
     public static BooleanSimilarity createBooleanSimilarity(Settings settings, Version indexCreatedVersion) {
@@ -286,14 +283,9 @@ final class SimilarityProviders {
         return new BooleanSimilarity();
     }
 
-    public static ClassicSimilarity createClassicSimilarity(Settings settings, Version indexCreatedVersion) {
+    public static Similarity createClassicSimilarity(Settings settings, Version indexCreatedVersion) {
         assertSettingsIsSubsetOf("classic", indexCreatedVersion, settings, DISCOUNT_OVERLAPS);
-
-        boolean discountOverlaps = settings.getAsBoolean(DISCOUNT_OVERLAPS, true);
-
-        ClassicSimilarity similarity = new ClassicSimilarity();
-        similarity.setDiscountOverlaps(discountOverlaps);
-        return similarity;
+        return new BM25Similarity();
     }
 
     public static DFRSimilarity createDfrSimilarity(Settings settings, Version indexCreatedVersion) {

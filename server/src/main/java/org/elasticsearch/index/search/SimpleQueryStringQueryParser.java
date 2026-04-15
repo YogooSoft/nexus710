@@ -268,7 +268,11 @@ public class SimpleQueryStringQueryParser extends SimpleQueryParser {
                 for (int i = 0; i < plist.size(); i++) {
                     terms[i] = new Term(field, plist.get(i));
                 }
-                posQuery = new SynonymQuery(terms);
+                SynonymQuery.Builder sqBuilder = new SynonymQuery.Builder(field);
+                for (Term t : terms) {
+                    sqBuilder.addTerm(t);
+                }
+                posQuery = sqBuilder.build();
             } else {
                 BooleanQuery.Builder innerBuilder = new BooleanQuery.Builder();
                 for (BytesRef token : plist) {

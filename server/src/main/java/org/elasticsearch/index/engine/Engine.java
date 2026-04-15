@@ -153,12 +153,36 @@ public abstract class Engine implements Closeable {
         this.eventListener = engineConfig.getEventListener();
     }
 
-    /** Returns 0 in the case where accountable is null, otherwise returns {@code ramBytesUsed()} */
-    protected static long guardedRamBytesUsed(Accountable a) {
-        if (a == null) {
+    /**
+     * Returns 0 if {@code component} is null. Otherwise, if the component implements {@link Accountable}, returns
+     * {@link Accountable#ramBytesUsed()}. Lucene 9+ codec readers (e.g. postings, doc values) typically do not implement
+     * {@code Accountable}; those report 0 here — only types that still implement {@code Accountable} (such as
+     * {@code KnnVectorsReader}) contribute.
+     */
+    protected static long guardedRamBytesUsed(Object component) {
+        if (component == null) {
             return 0;
         }
-        return a.ramBytesUsed();
+        if (component instanceof Accountable) {
+            return ((Accountable) component).ramBytesUsed();
+        }
+        return 0;
+    }
+
+    /**
+     * Approximate heap retained by a segment reader. Lucene 9 removed {@code SegmentReader#ramBytesUsed()}; we sum
+     * estimates from underlying codec components where Lucene still exposes them via {@link Accountable}.
+     */
+    private static long segmentReaderRamBytesUsed(SegmentReader segmentReader) {
+        long total = 0;
+        total += guardedRamBytesUsed(segmentReader.getPostingsReader());
+        total += guardedRamBytesUsed(segmentReader.getFieldsReader());
+        total += guardedRamBytesUsed(segmentReader.getTermVectorsReader());
+        total += guardedRamBytesUsed(segmentReader.getNormsReader());
+        total += guardedRamBytesUsed(segmentReader.getPointsReader());
+        total += guardedRamBytesUsed(segmentReader.getDocValuesReader());
+        total += guardedRamBytesUsed(segmentReader.getVectorReader());
+        return total;
     }
 
     public final EngineConfig config() {
@@ -824,7 +848,7 @@ public abstract class Engine implements Closeable {
     }
 
     protected void fillSegmentStats(SegmentReader segmentReader, boolean includeSegmentFileSizes, SegmentsStats stats) {
-        stats.add(1, segmentReader.ramBytesUsed());
+        stats.add(1, segmentReaderRamBytesUsed(segmentReader));
         stats.addTermsMemoryInBytes(guardedRamBytesUsed(segmentReader.getPostingsReader()));
         stats.addStoredFieldsMemoryInBytes(guardedRamBytesUsed(segmentReader.getFieldsReader()));
         stats.addTermVectorsMemoryInBytes(guardedRamBytesUsed(segmentReader.getTermVectorsReader()));
@@ -986,10 +1010,10 @@ public abstract class Engine implements Closeable {
         } catch (IOException e) {
             logger.trace(() -> new ParameterizedMessage("failed to get size for [{}]", info.info.name), e);
         }
-        segment.memoryInBytes = segmentReader.ramBytesUsed();
+        segment.memoryInBytes = segmentReaderRamBytesUsed(segmentReader);
         segment.segmentSort = info.info.getIndexSort();
         if (verbose) {
-            segment.ramTree = Accountables.namedAccountable("root", segmentReader);
+            segment.ramTree = Accountables.namedAccountable("root", segment.memoryInBytes);
         }
         segment.attributes = info.info.getAttributes();
         // TODO: add more fine grained mem stats values to per segment info here

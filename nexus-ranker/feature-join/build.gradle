@@ -5,6 +5,10 @@
 
 apply plugin: 'java-library'
 
+repositories {
+    mavenCentral()
+}
+
 group = 'io.nexus710'
 
 dependencies {

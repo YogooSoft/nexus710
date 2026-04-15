@@ -25,8 +25,11 @@ import org.apache.lucene.index.SortedDocValues;
 import org.apache.lucene.index.SortedSetDocValues;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.FieldComparator;
+import org.apache.lucene.search.LeafFieldComparator;
+import org.apache.lucene.search.Pruning;
 import org.apache.lucene.search.Scorable;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.comparators.TermOrdValComparator;
 import org.apache.lucene.util.BitSet;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.common.util.BigArrays;
@@ -78,13 +81,13 @@ public class BytesRefFieldComparatorSource extends IndexFieldData.XFieldComparat
     protected void setScorer(Scorable scorer) {}
 
     @Override
-    public FieldComparator<?> newComparator(String fieldname, int numHits, int sortPos, boolean reversed) {
+    public FieldComparator<?> newComparator(String fieldname, int numHits, Pruning pruning, boolean reversed) {
         assert indexFieldData == null || fieldname.equals(indexFieldData.getFieldName());
 
         final boolean sortMissingLast = sortMissingLast(missingValue) ^ reversed;
         final BytesRef missingBytes = (BytesRef) missingObject(missingValue, reversed);
         if (indexFieldData instanceof IndexOrdinalsFieldData) {
-            return new FieldComparator.TermOrdValComparator(numHits, null, sortMissingLast) {
+            return new TermOrdValComparator(numHits, null, sortMissingLast, reversed, pruning) {
 
                 @Override
                 protected SortedDocValues getSortedDocValues(LeafReaderContext context, String field) throws IOException {
@@ -107,8 +110,23 @@ public class BytesRefFieldComparatorSource extends IndexFieldData.XFieldComparat
                 }
 
                 @Override
-                public void setScorer(Scorable scorer) {
-                    BytesRefFieldComparatorSource.this.setScorer(scorer);
+                public LeafFieldComparator getLeafComparator(LeafReaderContext context) throws IOException {
+                    LeafFieldComparator delegate = super.getLeafComparator(context);
+                    return new LeafFieldComparator() {
+                        @Override
+                        public void setBottom(int slot) throws IOException { delegate.setBottom(slot); }
+                        @Override
+                        public int compareBottom(int doc) throws IOException { return delegate.compareBottom(doc); }
+                        @Override
+                        public int compareTop(int doc) throws IOException { return delegate.compareTop(doc); }
+                        @Override
+                        public void copy(int slot, int doc) throws IOException { delegate.copy(slot, doc); }
+                        @Override
+                        public void setScorer(Scorable scorer) throws IOException {
+                            BytesRefFieldComparatorSource.this.setScorer(scorer);
+                            delegate.setScorer(scorer);
+                        }
+                    };
                 }
 
             };

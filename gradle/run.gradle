@@ -8,7 +8,7 @@ apply plugin: 'elasticsearch.testclusters'
 
 testClusters {
   runTask {
-    testDistribution = 'oss'
+    testDistribution = 'INTEG_TEST'
   }
 }
 

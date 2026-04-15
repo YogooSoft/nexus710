@@ -31,7 +31,7 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BoostQuery;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.DocValuesFieldExistsQuery;
+import org.apache.lucene.search.FieldExistsQuery;
 import org.apache.lucene.search.FieldDoc;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.MultiCollector;
@@ -50,7 +50,8 @@ import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.search.TotalHits;
 import org.apache.lucene.search.grouping.CollapseTopFieldDocs;
 import org.apache.lucene.search.grouping.CollapsingTopDocsCollector;
-import org.apache.lucene.search.spans.SpanQuery;
+// TODO: Lucene 9.x migration - spans removed
+// import org.apache.lucene.search.spans.SpanQuery;
 import org.elasticsearch.action.search.MaxScoreCollector;
 import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.lucene.Lucene;
@@ -392,8 +393,8 @@ abstract class TopDocsCollectorContext extends QueryCollectorContext {
                 count += context.reader().docFreq(term);
             }
             return count;
-        } else if (query.getClass() == DocValuesFieldExistsQuery.class && reader.hasDeletions() == false) {
-            final String field = ((DocValuesFieldExistsQuery) query).getField();
+        } else if (query.getClass() == FieldExistsQuery.class && reader.hasDeletions() == false) {
+            final String field = ((FieldExistsQuery) query).getField();
             int count = 0;
             for (LeafReaderContext context : reader.leaves()) {
                 FieldInfos fieldInfos = context.reader().getFieldInfos();
@@ -497,9 +498,9 @@ abstract class TopDocsCollectorContext extends QueryCollectorContext {
         }
 
         void checkMaxScoreInfo(Query query) {
+            // TODO: Lucene 9.x migration - SpanQuery check removed (spans no longer available)
             if (query instanceof FunctionScoreQuery
-                    || query instanceof ScriptScoreQuery
-                    || query instanceof SpanQuery) {
+                    || query instanceof ScriptScoreQuery) {
                 hasInfMaxScore = true;
             } else if (query instanceof ESToParentBlockJoinQuery) {
                 ESToParentBlockJoinQuery q = (ESToParentBlockJoinQuery) query;

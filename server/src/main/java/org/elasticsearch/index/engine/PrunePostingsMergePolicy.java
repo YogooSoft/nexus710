@@ -97,7 +97,7 @@ final class PrunePostingsMergePolicy extends OneMergeWrappingMergePolicy {
                                 @Override
                                 public TermsEnum iterator() throws IOException {
                                     TermsEnum iterator = super.iterator();
-                                    return new FilteredTermsEnum(iterator, false) {
+                                    return new FilteredTermsEnum(iterator) {
                                         private PostingsEnum internal;
 
                                         @Override
@@ -137,11 +137,6 @@ final class PrunePostingsMergePolicy extends OneMergeWrappingMergePolicy {
                     @Override
                     public int size() {
                         return postingsReader.size();
-                    }
-
-                    @Override
-                    public long ramBytesUsed() {
-                        return postingsReader.ramBytesUsed();
                     }
                 };
             }

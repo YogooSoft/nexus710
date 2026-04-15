@@ -66,10 +66,10 @@ public class LongGCDisruption extends SingleNodeDisruption {
     }
 
     /**
-     * Checks if during disruption we ran into a known JVM issue that makes {@link Thread#suspend()} calls block for multiple seconds
+     * Checks if during disruption we ran into a known JVM issue that makes {@code Thread#suspend()} calls block for multiple seconds
      * was observed.
      * @see <a href=https://bugs.openjdk.java.net/browse/JDK-8218446>JDK-8218446</a>
-     * @return true if during thread suspending a call to {@link Thread#suspend()} took more than 3s
+     * @return true if during thread suspending a call to {@code Thread#suspend()} took more than 3s
      */
     public boolean sawSlowSuspendBug() {
         return sawSlowSuspendBug.get();

@@ -116,6 +116,11 @@ final class Security {
      */
     static void configure(Environment environment, boolean filterBadDefaults) throws IOException, NoSuchAlgorithmException {
 
+        if (Runtime.version().feature() >= 24) {
+            selfTest();
+            return;
+        }
+
         // enable security policy: union of template and environment-based paths, and possibly plugin permissions
         Map<String, URL> codebases = getCodebaseJarMap(JarHell.parseClassPath());
         Policy.setPolicy(new ESPolicy(codebases, createPermissions(environment), getPluginPermissions(environment), filterBadDefaults,
@@ -127,7 +132,11 @@ final class Security {
                         // SecureSM matches class names as regular expressions so we escape the $ that arises from the nested class name
                         ElasticsearchUncaughtExceptionHandler.PrivilegedHaltAction.class.getName().replace("$", "\\$"),
                         Command.class.getName()};
-        System.setSecurityManager(new SecureSM(classesThatCanExit));
+        try {
+            System.setSecurityManager(new SecureSM(classesThatCanExit));
+        } catch (UnsupportedOperationException e) {
+            // JDK 24+ removed SecurityManager support entirely
+        }
 
         // do some basic tests
         selfTest();

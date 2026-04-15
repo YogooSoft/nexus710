@@ -434,8 +434,8 @@ public class IncludeExclude implements Writeable, ToXContentFragment {
         boolean regexBased = isRegexBased();
         out.writeBoolean(regexBased);
         if (regexBased) {
-            out.writeOptionalString(include == null ? null : include.getOriginalString());
-            out.writeOptionalString(exclude == null ? null : exclude.getOriginalString());
+            out.writeOptionalString(include == null ? null : include.toString());
+            out.writeOptionalString(exclude == null ? null : exclude.toString());
         } else {
             boolean hasIncludes = includeValues != null;
             out.writeBoolean(hasIncludes);
@@ -581,9 +581,9 @@ public class IncludeExclude implements Writeable, ToXContentFragment {
             a = Automata.makeAnyString();
         }
         if (exclude != null) {
-            a = Operations.minus(a, exclude.toAutomaton(), Operations.DEFAULT_MAX_DETERMINIZED_STATES);
+            a = Operations.minus(a, exclude.toAutomaton(), Operations.DEFAULT_DETERMINIZE_WORK_LIMIT);
         } else if (excludeValues != null) {
-            a = Operations.minus(a, Automata.makeStringUnion(excludeValues), Operations.DEFAULT_MAX_DETERMINIZED_STATES);
+            a = Operations.minus(a, Automata.makeStringUnion(excludeValues), Operations.DEFAULT_DETERMINIZE_WORK_LIMIT);
         }
         return a;
     }
@@ -671,7 +671,7 @@ public class IncludeExclude implements Writeable, ToXContentFragment {
     @Override
     public XContentBuilder toXContent(XContentBuilder builder, Params params) throws IOException {
         if (include != null) {
-            builder.field(INCLUDE_FIELD.getPreferredName(), include.getOriginalString());
+            builder.field(INCLUDE_FIELD.getPreferredName(), include.toString());
         } else if (includeValues != null) {
             builder.startArray(INCLUDE_FIELD.getPreferredName());
             for (BytesRef value : includeValues) {
@@ -685,7 +685,7 @@ public class IncludeExclude implements Writeable, ToXContentFragment {
             builder.endObject();
         }
         if (exclude != null) {
-            builder.field(EXCLUDE_FIELD.getPreferredName(), exclude.getOriginalString());
+            builder.field(EXCLUDE_FIELD.getPreferredName(), exclude.toString());
         } else if (excludeValues != null) {
             builder.startArray(EXCLUDE_FIELD.getPreferredName());
             for (BytesRef value : excludeValues) {
@@ -699,8 +699,8 @@ public class IncludeExclude implements Writeable, ToXContentFragment {
     @Override
     public int hashCode() {
         return Objects.hash(
-                include == null ? null : include.getOriginalString(),
-                exclude == null ? null : exclude.getOriginalString(),
+                include == null ? null : include.toString(),
+                exclude == null ? null : exclude.toString(),
                 includeValues, excludeValues, incZeroBasedPartition, incNumPartitions);
     }
 
@@ -712,10 +712,10 @@ public class IncludeExclude implements Writeable, ToXContentFragment {
             return false;
         }
         IncludeExclude other = (IncludeExclude) obj;
-        return Objects.equals(include == null ? null : include.getOriginalString(),
-                other.include == null ? null : other.include.getOriginalString())
-                && Objects.equals(exclude == null ? null : exclude.getOriginalString(),
-                        other.exclude == null ? null : other.exclude.getOriginalString())
+        return Objects.equals(include == null ? null : include.toString(),
+                other.include == null ? null : other.include.toString())
+                && Objects.equals(exclude == null ? null : exclude.toString(),
+                        other.exclude == null ? null : other.exclude.toString())
                 && Objects.equals(includeValues, other.includeValues) && Objects.equals(excludeValues, other.excludeValues)
                 && Objects.equals(incZeroBasedPartition, other.incZeroBasedPartition)
                 && Objects.equals(incNumPartitions, other.incNumPartitions);

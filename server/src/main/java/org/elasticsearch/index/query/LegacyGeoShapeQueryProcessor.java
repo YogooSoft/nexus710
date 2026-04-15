@@ -22,10 +22,11 @@ package org.elasticsearch.index.query;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.spatial.prefix.PrefixTreeStrategy;
-import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
-import org.apache.lucene.spatial.query.SpatialArgs;
-import org.apache.lucene.spatial.query.SpatialOperation;
+// TODO: Lucene 9.x removed lucene-spatial-extras (prefix tree support)
+// import org.apache.lucene.spatial.prefix.PrefixTreeStrategy;
+// import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
+// import org.apache.lucene.spatial.query.SpatialArgs;
+// import org.apache.lucene.spatial.query.SpatialOperation;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.common.geo.SpatialStrategy;
@@ -72,45 +73,11 @@ public class LegacyGeoShapeQueryProcessor  {
 
     public Query geoShapeQuery(Geometry shape, String fieldName, SpatialStrategy strategy,
                                ShapeRelation relation, QueryShardContext context) {
-        if (context.allowExpensiveQueries() == false) {
-            throw new ElasticsearchException("[geo-shape] queries on [PrefixTree geo shapes] cannot be executed when '"
-                    + ALLOW_EXPENSIVE_QUERIES.getKey() + "' is set to false.");
-        }
-
-        LegacyGeoShapeFieldMapper.GeoShapeFieldType shapeFieldType = (LegacyGeoShapeFieldMapper.GeoShapeFieldType) ft;
-        SpatialStrategy spatialStrategy = shapeFieldType.strategy();
-        if (strategy != null) {
-            spatialStrategy = strategy;
-        }
-        PrefixTreeStrategy prefixTreeStrategy = shapeFieldType.resolvePrefixTreeStrategy(spatialStrategy);
-        if (prefixTreeStrategy instanceof RecursivePrefixTreeStrategy && relation == ShapeRelation.DISJOINT) {
-            // this strategy doesn't support disjoint anymore: but it did
-            // before, including creating lucene fieldcache (!)
-            // in this case, execute disjoint as exists && !intersects
-            BooleanQuery.Builder bool = new BooleanQuery.Builder();
-            Query exists = ExistsQueryBuilder.newFilter(context, fieldName,false);
-            Query intersects = prefixTreeStrategy.makeQuery(getArgs(shape, ShapeRelation.INTERSECTS));
-            bool.add(exists, BooleanClause.Occur.MUST);
-            bool.add(intersects, BooleanClause.Occur.MUST_NOT);
-            return bool.build();
-        } else {
-            return prefixTreeStrategy.makeQuery(getArgs(shape, relation));
-        }
+        throw new UnsupportedOperationException("Legacy geo shape with spatial prefix tree not supported in Lucene 9.x");
     }
 
-    public static SpatialArgs getArgs(Geometry shape, ShapeRelation relation) {
-        switch (relation) {
-            case DISJOINT:
-                return new SpatialArgs(SpatialOperation.IsDisjointTo, buildS4J(shape));
-            case INTERSECTS:
-                return new SpatialArgs(SpatialOperation.Intersects, buildS4J(shape));
-            case WITHIN:
-                return new SpatialArgs(SpatialOperation.IsWithin, buildS4J(shape));
-            case CONTAINS:
-                return new SpatialArgs(SpatialOperation.Contains, buildS4J(shape));
-            default:
-                throw new IllegalArgumentException("invalid relation [" + relation + "]");
-        }
+    public static Object getArgs(Geometry shape, ShapeRelation relation) {
+        throw new UnsupportedOperationException("Legacy geo shape with spatial prefix tree not supported in Lucene 9.x");
     }
 
     /**

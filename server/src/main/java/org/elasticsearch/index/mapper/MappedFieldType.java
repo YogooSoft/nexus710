@@ -35,8 +35,9 @@ import org.apache.lucene.search.NormsFieldExistsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermInSetQuery;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
-import org.apache.lucene.search.spans.SpanQuery;
+// TODO: Lucene 9.x migration - spans removed
+// import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
+// import org.apache.lucene.search.spans.SpanQuery;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.ElasticsearchParseException;
 import org.elasticsearch.common.Nullable;
@@ -291,9 +292,9 @@ public abstract class MappedFieldType {
             + "] which is of type [" + typeName() + "]");
     }
 
-    public SpanQuery spanPrefixQuery(String value, SpanMultiTermQueryWrapper.SpanRewriteMethod method, QueryShardContext context) {
-        throw new IllegalArgumentException("Can only use span prefix queries on text fields - not on [" + name
-            + "] which is of type [" + typeName() + "]");
+    // TODO: Lucene 9.x migration - spans removed
+    public Query spanPrefixQuery(String value, Object method, QueryShardContext context) {
+        throw new UnsupportedOperationException("Span queries not supported in Lucene 9.x");
     }
 
     public Query distanceFeatureQuery(Object origin, String pivot, float boost, QueryShardContext context) {

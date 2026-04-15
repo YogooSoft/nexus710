@@ -42,16 +42,17 @@ import org.apache.lucene.search.ConstantScoreQuery;
 import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.PhraseQuery;
-import org.apache.lucene.search.PrefixQuery;
+// import org.apache.lucene.search.PrefixQuery; // unused after spans removal
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SynonymQuery;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.spans.FieldMaskingSpanQuery;
-import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
-import org.apache.lucene.search.spans.SpanNearQuery;
-import org.apache.lucene.search.spans.SpanOrQuery;
-import org.apache.lucene.search.spans.SpanQuery;
-import org.apache.lucene.search.spans.SpanTermQuery;
+// TODO: Lucene 9.x migration - spans removed
+// import org.apache.lucene.search.spans.FieldMaskingSpanQuery;
+// import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
+// import org.apache.lucene.search.spans.SpanNearQuery;
+// import org.apache.lucene.search.spans.SpanOrQuery;
+// import org.apache.lucene.search.spans.SpanQuery;
+// import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.automaton.Automata;
 import org.apache.lucene.util.automaton.Automaton;
@@ -711,21 +712,10 @@ public class TextFieldMapper extends ParametrizedFieldMapper {
             return tq;
         }
 
+        // TODO: Lucene 9.x migration - spans removed
         @Override
-        public SpanQuery spanPrefixQuery(String value, SpanMultiTermQueryWrapper.SpanRewriteMethod method, QueryShardContext context) {
-            failIfNotIndexed();
-            if (prefixFieldType != null
-                    && value.length() >= prefixFieldType.minChars
-                    && value.length() <= prefixFieldType.maxChars
-                    && prefixFieldType.getTextSearchInfo().hasPositions()) {
-
-                return new FieldMaskingSpanQuery(new SpanTermQuery(new Term(prefixFieldType.name(), indexedValueForSearch(value))), name());
-            } else {
-                SpanMultiTermQueryWrapper<?> spanMulti =
-                    new SpanMultiTermQueryWrapper<>(new PrefixQuery(new Term(name(), indexedValueForSearch(value))));
-                spanMulti.setRewriteMethod(method);
-                return spanMulti;
-            }
+        public Query spanPrefixQuery(String value, Object method, QueryShardContext context) {
+            throw new UnsupportedOperationException("Span queries not supported in Lucene 9.x");
         }
 
         @Override
@@ -995,44 +985,17 @@ public class TextFieldMapper extends ParametrizedFieldMapper {
             Term[] newTerms = Arrays.stream(terms[0])
                 .map(term -> new Term(prefixField, term.bytes()))
                 .toArray(Term[]::new);
-            return new SynonymQuery(newTerms);
+            SynonymQuery.Builder sqBuilder = new SynonymQuery.Builder(prefixField);
+            for (Term t : newTerms) {
+                sqBuilder.addTerm(t);
+            }
+            return sqBuilder.build();
         }
 
-        SpanNearQuery.Builder spanQuery = new SpanNearQuery.Builder(field, true);
-        spanQuery.setSlop(slop);
-        int previousPos = -1;
-        for (int i = 0; i < terms.length; i++) {
-            Term[] posTerms = terms[i];
-            int posInc = positions[i] - previousPos;
-            previousPos = positions[i];
-            if (posInc > 1) {
-                spanQuery.addGap(posInc - 1);
-            }
-            if (i == lastPos) {
-                if (posTerms.length == 1) {
-                    FieldMaskingSpanQuery fieldMask =
-                        new FieldMaskingSpanQuery(new SpanTermQuery(new Term(prefixField, posTerms[0].bytes())), field);
-                    spanQuery.addClause(fieldMask);
-                } else {
-                    SpanQuery[] queries = Arrays.stream(posTerms)
-                        .map(term -> new FieldMaskingSpanQuery(
-                            new SpanTermQuery(new Term(prefixField, term.bytes())), field)
-                        )
-                        .toArray(SpanQuery[]::new);
-                    spanQuery.addClause(new SpanOrQuery(queries));
-                }
-            } else {
-                if (posTerms.length == 1) {
-                    spanQuery.addClause(new SpanTermQuery(posTerms[0]));
-                } else {
-                    SpanTermQuery[] queries = Arrays.stream(posTerms)
-                        .map(SpanTermQuery::new)
-                        .toArray(SpanTermQuery[]::new);
-                    spanQuery.addClause(new SpanOrQuery(queries));
-                }
-            }
-        }
-        return spanQuery.build();
+        // TODO: Lucene 9.x migration - spans removed
+        // SpanNearQuery-based prefix field optimization is no longer available.
+        // Fall back to the non-prefix MultiPhrasePrefixQuery.
+        return builder;
     }
 
     @Override

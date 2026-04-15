@@ -32,7 +32,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.CollectorManager;
 import org.apache.lucene.search.ConstantScoreQuery;
-import org.apache.lucene.search.DocValuesFieldExistsQuery;
+import org.apache.lucene.search.FieldExistsQuery;
 import org.apache.lucene.search.FieldDoc;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
@@ -45,7 +45,6 @@ import org.apache.lucene.search.TopFieldCollector;
 import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.TotalHits;
 import org.apache.lucene.search.Weight;
-import org.apache.lucene.util.FutureArrays;
 import org.elasticsearch.action.search.SearchShardTask;
 import org.elasticsearch.common.Booleans;
 import org.elasticsearch.common.CheckedConsumer;
@@ -475,7 +474,7 @@ public class QueryPhase {
 
         Query rewrittenQuery;
         if (minValue == maxValue) {
-            rewrittenQuery = new DocValuesFieldExistsQuery(fieldName);
+            rewrittenQuery = new FieldExistsQuery(fieldName);
         } else {
             if (indexFieldHasDuplicateData(reader, fieldName)) return null;
             long origin = (sortField.getReverse()) ? maxValue : minValue;
@@ -628,12 +627,12 @@ public class QueryPhase {
 
             @Override
             public PointValues.Relation compare(byte[] minPackedValue, byte[] maxPackedValue) {
-                if (FutureArrays.compareUnsigned(minPackedValue, 0, Long.BYTES, maxValueAsBytes, 0, Long.BYTES) > 0 ||
-                    FutureArrays.compareUnsigned(maxPackedValue, 0, Long.BYTES, minValueAsBytes, 0, Long.BYTES) < 0) {
+                if (Arrays.compareUnsigned(minPackedValue, 0, Long.BYTES, maxValueAsBytes, 0, Long.BYTES) > 0 ||
+                    Arrays.compareUnsigned(maxPackedValue, 0, Long.BYTES, minValueAsBytes, 0, Long.BYTES) < 0) {
                     return PointValues.Relation.CELL_OUTSIDE_QUERY;
                 }
-                if (FutureArrays.compareUnsigned(minPackedValue, 0, Long.BYTES, minValueAsBytes, 0, Long.BYTES) < 0 ||
-                    FutureArrays.compareUnsigned(maxPackedValue, 0, Long.BYTES, maxValueAsBytes, 0, Long.BYTES) > 0) {
+                if (Arrays.compareUnsigned(minPackedValue, 0, Long.BYTES, minValueAsBytes, 0, Long.BYTES) < 0 ||
+                    Arrays.compareUnsigned(maxPackedValue, 0, Long.BYTES, maxValueAsBytes, 0, Long.BYTES) > 0) {
                     return PointValues.Relation.CELL_CROSSES_QUERY;
                 }
                 return PointValues.Relation.CELL_INSIDE_QUERY;

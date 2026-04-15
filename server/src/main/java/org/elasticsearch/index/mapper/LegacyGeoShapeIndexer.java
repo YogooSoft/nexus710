@@ -51,22 +51,6 @@ public class LegacyGeoShapeIndexer implements AbstractGeometryFieldMapper.Indexe
 
     @Override
     public List<IndexableField>  indexShape(ParseContext context, Shape shape) {
-        if (fieldType.pointsOnly()) {
-            // index configured for pointsOnly
-            if (shape instanceof XShapeCollection && XShapeCollection.class.cast(shape).pointsOnly()) {
-                // MULTIPOINT data: index each point separately
-                @SuppressWarnings("unchecked") List<Shape> shapes = ((XShapeCollection) shape).getShapes();
-                List<IndexableField> fields = new ArrayList<>();
-                for (Shape s : shapes) {
-                    fields.addAll(Arrays.asList(fieldType.defaultPrefixTreeStrategy().createIndexableFields(s)));
-                }
-                return fields;
-            } else if (shape instanceof Point == false) {
-                throw new MapperParsingException("[{" + fieldType.name() + "}] is configured for points only but a "
-                    + ((shape instanceof JtsGeometry) ? ((JtsGeometry)shape).getGeom().getGeometryType() : shape.getClass())
-                    + " was found");
-            }
-        }
-        return Arrays.asList(fieldType.defaultPrefixTreeStrategy().createIndexableFields(shape));
+        throw new UnsupportedOperationException("Legacy geo shape with spatial prefix tree not supported in Lucene 9.x");
     }
 }

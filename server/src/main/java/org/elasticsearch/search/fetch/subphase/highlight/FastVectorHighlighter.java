@@ -45,6 +45,7 @@ import org.elasticsearch.search.lookup.SourceLookup;
 
 import java.io.IOException;
 import java.text.BreakIterator;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
@@ -230,12 +231,15 @@ public class FastVectorHighlighter implements Highlighter {
                     return new BreakIteratorBoundaryScanner(BreakIterator.getWordInstance(boundaryScannerLocale));
                 }
                 return DEFAULT_WORD_BOUNDARY_SCANNER;
-            case CHARS:
-                if (fieldOptions.boundaryMaxScan() != SimpleBoundaryScanner.DEFAULT_MAX_SCAN
-                    || fieldOptions.boundaryChars() != SimpleBoundaryScanner.DEFAULT_BOUNDARY_CHARS) {
-                    return new SimpleBoundaryScanner(fieldOptions.boundaryMaxScan(), fieldOptions.boundaryChars());
+            case CHARS: {
+                Character[] boundaryChars = fieldOptions.boundaryChars();
+                boolean defaultBoundaryChars = boundaryChars == null
+                    || Arrays.equals(boundaryChars, HighlightBuilder.DEFAULT_BOUNDARY_CHARS_CHARACTER_ARRAY);
+                if (fieldOptions.boundaryMaxScan() == SimpleBoundaryScanner.DEFAULT_MAX_SCAN && defaultBoundaryChars) {
+                    return DEFAULT_SIMPLE_BOUNDARY_SCANNER;
                 }
-                return DEFAULT_SIMPLE_BOUNDARY_SCANNER;
+                return new SimpleBoundaryScanner(fieldOptions.boundaryMaxScan(), fieldOptions.boundaryChars());
+            }
             default:
                 throw new IllegalArgumentException("Invalid boundary scanner type: " + type.toString());
         }

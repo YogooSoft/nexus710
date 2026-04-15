@@ -22,7 +22,6 @@ package org.elasticsearch.search.fetch.subphase;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.search.CollectionTerminatedException;
 import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.ConjunctionDISI;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.LeafCollector;
 import org.apache.lucene.search.ScoreMode;
@@ -39,7 +38,6 @@ import org.elasticsearch.search.internal.SubSearchContext;
 import org.elasticsearch.search.lookup.SourceLookup;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -173,8 +171,7 @@ public final class InnerHitsContext {
 
         try {
             Bits acceptDocs = ctx.reader().getLiveDocs();
-            DocIdSetIterator iterator = ConjunctionDISI.intersectIterators(Arrays.asList(innerHitQueryScorer.iterator(),
-                scorer.iterator()));
+            DocIdSetIterator iterator = intersectIterators(innerHitQueryScorer.iterator(), scorer.iterator());
             for (int docId = iterator.nextDoc(); docId < DocIdSetIterator.NO_MORE_DOCS; docId = iterator.nextDoc()) {
                 if (acceptDocs == null || acceptDocs.get(docId)) {
                     leafCollector.collect(docId);
@@ -183,5 +180,47 @@ public final class InnerHitsContext {
         } catch (CollectionTerminatedException e) {
             // ignore and continue
         }
+    }
+
+    private static DocIdSetIterator intersectIterators(DocIdSetIterator a, DocIdSetIterator b) {
+        return new DocIdSetIterator() {
+            private int doc = -1;
+
+            @Override
+            public int docID() { return doc; }
+
+            @Override
+            public int nextDoc() throws IOException {
+                int docA = a.nextDoc();
+                int docB = b.nextDoc();
+                while (docA != docB) {
+                    if (docA < docB) {
+                        docA = a.advance(docB);
+                    } else {
+                        docB = b.advance(docA);
+                    }
+                }
+                return doc = docA;
+            }
+
+            @Override
+            public int advance(int target) throws IOException {
+                int docA = a.advance(target);
+                int docB = b.advance(target);
+                while (docA != docB) {
+                    if (docA < docB) {
+                        docA = a.advance(docB);
+                    } else {
+                        docB = b.advance(docA);
+                    }
+                }
+                return doc = docA;
+            }
+
+            @Override
+            public long cost() {
+                return Math.min(a.cost(), b.cost());
+            }
+        };
     }
 }

@@ -33,7 +33,6 @@ import org.apache.lucene.index.SortedDocValues;
 import org.apache.lucene.index.SortedNumericDocValues;
 import org.apache.lucene.index.SortedSetDocValues;
 import org.apache.lucene.index.StoredFieldVisitor;
-import org.apache.lucene.search.ConjunctionDISI;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -44,7 +43,6 @@ import org.apache.lucene.util.BitSet;
 import org.apache.lucene.util.BitSetIterator;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -106,8 +104,8 @@ final class RecoverySourcePruneMergePolicy extends OneMergeWrappingMergePolicy {
                             // we can't return null here lucenes DocIdMerger expects an instance
                             intersection = DocIdSetIterator.empty();
                         } else {
-                            intersection = ConjunctionDISI.intersectIterators(Arrays.asList(numeric,
-                                new BitSetIterator(recoverySourceToKeep, recoverySourceToKeep.length())));
+                            intersection = intersectIterators(numeric,
+                                new BitSetIterator(recoverySourceToKeep, recoverySourceToKeep.length()));
                         }
                         return new FilterNumericDocValues(numeric) {
                             @Override
@@ -189,11 +187,6 @@ final class RecoverySourcePruneMergePolicy extends OneMergeWrappingMergePolicy {
             public void close() throws IOException {
                 in.close();
             }
-
-            @Override
-            public long ramBytesUsed() {
-                return in.ramBytesUsed();
-            }
         }
 
         private abstract static class FilterStoredFieldsReader extends StoredFieldsReader {
@@ -205,18 +198,13 @@ final class RecoverySourcePruneMergePolicy extends OneMergeWrappingMergePolicy {
             }
 
             @Override
-            public long ramBytesUsed() {
-                return in.ramBytesUsed();
-            }
-
-            @Override
             public void close() throws IOException {
                 in.close();
             }
 
             @Override
-            public void visitDocument(int docID, StoredFieldVisitor visitor) throws IOException {
-                in.visitDocument(docID, visitor);
+            public void document(int docID, StoredFieldVisitor visitor) throws IOException {
+                in.document(docID, visitor);
             }
 
             @Override
@@ -240,11 +228,11 @@ final class RecoverySourcePruneMergePolicy extends OneMergeWrappingMergePolicy {
             }
 
             @Override
-            public void visitDocument(int docID, StoredFieldVisitor visitor) throws IOException {
+            public void document(int docID, StoredFieldVisitor visitor) throws IOException {
                 if (recoverySourceToKeep != null && recoverySourceToKeep.get(docID)) {
-                    super.visitDocument(docID, visitor);
+                    super.document(docID, visitor);
                 } else {
-                    super.visitDocument(docID, new FilterStoredFieldVisitor(visitor) {
+                    super.document(docID, new FilterStoredFieldVisitor(visitor) {
                         @Override
                         public Status needsField(FieldInfo fieldInfo) throws IOException {
                             if (recoverySourceField.equals(fieldInfo.name)) {
@@ -281,7 +269,7 @@ final class RecoverySourcePruneMergePolicy extends OneMergeWrappingMergePolicy {
             }
 
             @Override
-            public void stringField(FieldInfo fieldInfo, byte[] value) throws IOException {
+            public void stringField(FieldInfo fieldInfo, String value) throws IOException {
                 visitor.stringField(fieldInfo, value);
             }
 
@@ -310,5 +298,47 @@ final class RecoverySourcePruneMergePolicy extends OneMergeWrappingMergePolicy {
                 return visitor.needsField(fieldInfo);
             }
         }
+    }
+
+    private static DocIdSetIterator intersectIterators(DocIdSetIterator a, DocIdSetIterator b) {
+        return new DocIdSetIterator() {
+            private int doc = -1;
+
+            @Override
+            public int docID() { return doc; }
+
+            @Override
+            public int nextDoc() throws IOException {
+                int docA = a.nextDoc();
+                int docB = b.nextDoc();
+                while (docA != docB) {
+                    if (docA < docB) {
+                        docA = a.advance(docB);
+                    } else {
+                        docB = b.advance(docA);
+                    }
+                }
+                return doc = docA;
+            }
+
+            @Override
+            public int advance(int target) throws IOException {
+                int docA = a.advance(target);
+                int docB = b.advance(target);
+                while (docA != docB) {
+                    if (docA < docB) {
+                        docA = a.advance(docB);
+                    } else {
+                        docB = b.advance(docA);
+                    }
+                }
+                return doc = docA;
+            }
+
+            @Override
+            public long cost() {
+                return Math.min(a.cost(), b.cost());
+            }
+        };
     }
 }

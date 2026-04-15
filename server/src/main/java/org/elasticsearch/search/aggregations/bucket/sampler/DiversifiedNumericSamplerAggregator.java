@@ -22,8 +22,9 @@ package org.elasticsearch.search.aggregations.bucket.sampler;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.index.SortedNumericDocValues;
-import org.apache.lucene.search.DiversifiedTopDocsCollector;
-import org.apache.lucene.search.DiversifiedTopDocsCollector.ScoreDocKey;
+// import org.apache.lucene.search.DiversifiedTopDocsCollector; // removed in Lucene 9.x
+// import org.apache.lucene.search.DiversifiedTopDocsCollector.ScoreDocKey;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocsCollector;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.index.fielddata.AbstractNumericDocValues;
@@ -76,61 +77,13 @@ public class DiversifiedNumericSamplerAggregator extends SamplerAggregator {
         }
 
         @Override
-        protected TopDocsCollector<ScoreDocKey> createTopDocsCollector(int size) {
-            // Make sure we do not allow size > maxDoc, to prevent accidental OOM
-            int minMaxDocsPerValue = Math.min(maxDocsPerValue, context.searcher().getIndexReader().maxDoc());
-            return new ValuesDiversifiedTopDocsCollector(size, minMaxDocsPerValue);
+        protected TopDocsCollector<? extends ScoreDoc> createTopDocsCollector(int size) {
+            throw new UnsupportedOperationException("DiversifiedTopDocsCollector removed in Lucene 9.x");
         }
 
         @Override
         protected long getPriorityQueueSlotSize() {
             return SCOREDOCKEY_SIZE;
-        }
-
-        // This class extends the DiversifiedTopDocsCollector and provides
-        // a lookup from elasticsearch's ValuesSource
-        class ValuesDiversifiedTopDocsCollector extends DiversifiedTopDocsCollector {
-
-            private SortedNumericDocValues values;
-
-            ValuesDiversifiedTopDocsCollector(int numHits, int maxHitsPerKey) {
-                super(numHits, maxHitsPerKey);
-            }
-
-            @Override
-            protected NumericDocValues getKeys(LeafReaderContext context) {
-                try {
-                    values = valuesSource.longValues(context);
-                } catch (IOException e) {
-                    throw new ElasticsearchException("Error reading values", e);
-                }
-                return new AbstractNumericDocValues() {
-
-                    @Override
-                    public boolean advanceExact(int target) throws IOException {
-                        if (values.advanceExact(target)) {
-                            if (values.docValueCount() > 1) {
-                                throw new IllegalArgumentException(
-                                        "Sample diversifying key must be a single valued-field");
-                            }
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    }
-
-                    @Override
-                    public int docID() {
-                        return values.docID();
-                    }
-
-                    @Override
-                    public long longValue() throws IOException {
-                        return values.nextValue();
-                    }
-                };
-            }
-
         }
 
     }

@@ -30,6 +30,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.MatchNoDocsQuery;
 import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryVisitor;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.StringHelper;
 
@@ -70,7 +71,7 @@ public class MultiPhrasePrefixQuery extends Query {
     /**
      * Sets the phrase slop for this query.
      *
-     * @see org.apache.lucene.search.PhraseQuery.Builder#getSlop()
+     * @see org.apache.lucene.search.PhraseQuery#getSlop()
      */
     public int getSlop() {
         return slop;
@@ -139,6 +140,11 @@ public class MultiPhrasePrefixQuery extends Query {
         for (int i = 0; i < positions.size(); i++)
             result[i] = positions.get(i);
         return result;
+    }
+
+    @Override
+    public void visit(QueryVisitor visitor) {
+        visitor.visitLeaf(this);
     }
 
     @Override

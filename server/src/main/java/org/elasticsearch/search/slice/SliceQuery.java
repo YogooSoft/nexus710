@@ -20,6 +20,7 @@
 package org.elasticsearch.search.slice;
 
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryVisitor;
 
 import java.util.Objects;
 
@@ -57,6 +58,11 @@ public abstract class SliceQuery extends Query {
 
     public int getMax() {
         return max;
+    }
+
+    @Override
+    public void visit(QueryVisitor visitor) {
+        visitor.visitLeaf(this);
     }
 
     @Override

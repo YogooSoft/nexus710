@@ -18,8 +18,6 @@
  */
 package org.elasticsearch.common.util;
 
-import org.apache.lucene.store.DataInput;
-import org.apache.lucene.store.DataOutput;
 import org.apache.lucene.util.packed.PackedInts;
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
@@ -133,17 +131,11 @@ public class CuckooFilter implements Writeable {
 
         this.fingerprintMask = (0x80000000 >> (bitsPerEntry - 1)) >>> (Integer.SIZE - bitsPerEntry);
 
-        data = (PackedInts.Mutable) PackedInts.getReader(new DataInput() {
-            @Override
-            public byte readByte() throws IOException {
-                return in.readByte();
-            }
-
-            @Override
-            public void readBytes(byte[] b, int offset, int len) throws IOException {
-                in.readBytes(b, offset, len);
-            }
-        });
+        int valueCount = numBuckets * entriesPerBucket;
+        data = PackedInts.getMutable(valueCount, bitsPerEntry, PackedInts.COMPACT);
+        for (int i = 0; i < valueCount; i++) {
+            data.set(i, in.readVLong());
+        }
     }
 
     @Override
@@ -154,17 +146,9 @@ public class CuckooFilter implements Writeable {
         out.writeVInt(count);
         out.writeVInt(evictedFingerprint);
 
-        data.save(new DataOutput() {
-            @Override
-            public void writeByte(byte b) throws IOException {
-                out.writeByte(b);
-            }
-
-            @Override
-            public void writeBytes(byte[] b, int offset, int length) throws IOException {
-                out.writeBytes(b, offset, length);
-            }
-        });
+        for (int i = 0; i < data.size(); i++) {
+            out.writeVLong(data.get(i));
+        }
     }
 
     /**

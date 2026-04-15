@@ -181,10 +181,8 @@ public final class MergePolicyConfig {
         mergePolicy.setForceMergeDeletesPctAllowed(forceMergeDeletesPctAllowed);
         mergePolicy.setFloorSegmentMB(floorSegment.getMbFrac());
         mergePolicy.setMaxMergeAtOnce(maxMergeAtOnce);
-        mergePolicy.setMaxMergeAtOnceExplicit(maxMergeAtOnceExplicit);
         mergePolicy.setMaxMergedSegmentMB(maxMergedSegment.getMbFrac());
         mergePolicy.setSegmentsPerTier(segmentsPerTier);
-        mergePolicy.setDeletesPctAllowed(deletesPctAllowed);
         if (logger.isTraceEnabled()) {
             logger.trace("using [tiered] merge mergePolicy with expunge_deletes_allowed[{}], floor_segment[{}]," +
                     " max_merge_at_once[{}], max_merge_at_once_explicit[{}], max_merged_segment[{}], segments_per_tier[{}]," +
@@ -203,7 +201,6 @@ public final class MergePolicyConfig {
     }
 
     void setMaxMergesAtOnceExplicit(Integer maxMergeAtOnceExplicit) {
-        mergePolicy.setMaxMergeAtOnceExplicit(maxMergeAtOnceExplicit);
     }
 
     void setMaxMergesAtOnce(Integer maxMergeAtOnce) {
@@ -223,7 +220,6 @@ public final class MergePolicyConfig {
     }
 
     void setDeletesPctAllowed(Double deletesPctAllowed) {
-        mergePolicy.setDeletesPctAllowed(deletesPctAllowed);
     }
 
     private int adjustMaxMergeAtOnceIfNeeded(int maxMergeAtOnce, double segmentsPerTier) {

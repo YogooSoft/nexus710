@@ -25,11 +25,10 @@ import org.apache.lucene.search.CollectionStatistics;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.TermStatistics;
 import org.apache.lucene.search.similarities.BooleanSimilarity;
-import org.apache.lucene.search.similarities.ClassicSimilarity;
 import org.apache.lucene.search.similarities.PerFieldSimilarityWrapper;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.search.similarities.Similarity.SimScorer;
-import org.apache.lucene.search.similarity.LegacyBM25Similarity;
+import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.Version;
 import org.elasticsearch.common.TriFunction;
@@ -63,7 +62,7 @@ public final class SimilarityService extends AbstractIndexComponent {
                             + "similarity or build a custom [scripted] similarity instead.");
                 };
             } else {
-                final ClassicSimilarity similarity = SimilarityProviders.createClassicSimilarity(Settings.EMPTY, version);
+                final Similarity similarity = SimilarityProviders.createClassicSimilarity(Settings.EMPTY, version);
                 return () -> {
                     deprecationLogger.deprecate("classic_similarity",
                         "The [classic] similarity is now deprecated in favour of BM25, which is generally "
@@ -74,7 +73,7 @@ public final class SimilarityService extends AbstractIndexComponent {
             }
         });
         defaults.put("BM25", version -> {
-            final LegacyBM25Similarity similarity = SimilarityProviders.createBM25Similarity(Settings.EMPTY, version);
+            final BM25Similarity similarity = SimilarityProviders.createBM25Similarity(Settings.EMPTY, version);
             return () -> similarity;
         });
         defaults.put("boolean", version -> {

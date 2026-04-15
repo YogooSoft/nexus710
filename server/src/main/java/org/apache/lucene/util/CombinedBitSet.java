@@ -86,6 +86,12 @@ public final class CombinedBitSet extends BitSet implements Bits {
     }
 
     @Override
+    public int nextSetBit(int index, int upperBound) {
+        int result = nextSetBit(index);
+        return result < upperBound ? result : DocIdSetIterator.NO_MORE_DOCS;
+    }
+
+    @Override
     public long ramBytesUsed() {
         return first.ramBytesUsed();
     }
@@ -98,6 +104,11 @@ public final class CombinedBitSet extends BitSet implements Bits {
     @Override
     public int length() {
         return length;
+    }
+
+    @Override
+    public boolean getAndSet(int i) {
+        throw new UnsupportedOperationException("not implemented");
     }
 
     @Override

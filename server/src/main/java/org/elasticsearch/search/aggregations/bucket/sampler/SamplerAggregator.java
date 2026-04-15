@@ -19,7 +19,8 @@
 package org.elasticsearch.search.aggregations.bucket.sampler;
 
 import org.apache.lucene.index.LeafReaderContext;
-import org.apache.lucene.search.DiversifiedTopDocsCollector;
+// import org.apache.lucene.search.DiversifiedTopDocsCollector; // removed in Lucene 9.x
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.ScoreMode;
 import org.apache.lucene.util.RamUsageEstimator;
 import org.elasticsearch.common.ParseField;
@@ -56,7 +57,7 @@ public class SamplerAggregator extends DeferableBucketAggregator implements Sing
     public static final ParseField MAX_DOCS_PER_VALUE_FIELD = new ParseField("max_docs_per_value");
     public static final ParseField EXECUTION_HINT_FIELD = new ParseField("execution_hint");
 
-    static final long SCOREDOCKEY_SIZE = RamUsageEstimator.shallowSizeOfInstance(DiversifiedTopDocsCollector.ScoreDocKey.class);
+    static final long SCOREDOCKEY_SIZE = RamUsageEstimator.shallowSizeOfInstance(ScoreDoc.class);
 
     public enum ExecutionMode {
 

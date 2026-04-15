@@ -23,7 +23,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.LeafReaderContext;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.ConstantScoreScorer;
 import org.apache.lucene.search.ConstantScoreWeight;
 import org.apache.lucene.search.DocIdSetIterator;
@@ -45,7 +44,6 @@ import org.elasticsearch.index.shard.ShardId;
 import org.elasticsearch.test.ESTestCase;
 
 import java.io.IOException;
-import java.util.Set;
 
 public class IndicesQueryCacheTests extends ESTestCase {
 
@@ -359,11 +357,6 @@ public class IndicesQueryCacheTests extends ESTestCase {
         DummyWeight(Weight weight) {
             super(weight.getQuery());
             this.weight = weight;
-        }
-
-        @Override
-        public void extractTerms(Set<Term> terms) {
-            weight.extractTerms(terms);
         }
 
         @Override

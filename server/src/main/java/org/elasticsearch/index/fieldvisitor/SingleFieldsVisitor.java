@@ -25,7 +25,6 @@ import org.elasticsearch.index.mapper.MappedFieldType;
 import org.elasticsearch.index.mapper.Uid;
 import org.apache.lucene.util.BytesRef;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -71,8 +70,8 @@ public final class SingleFieldsVisitor extends StoredFieldVisitor {
     }
 
     @Override
-    public void stringField(FieldInfo fieldInfo, byte[] bytes) {
-        addValue(new String(bytes, StandardCharsets.UTF_8));
+    public void stringField(FieldInfo fieldInfo, String value) {
+        addValue(value);
     }
 
     @Override

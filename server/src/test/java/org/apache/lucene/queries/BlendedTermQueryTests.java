@@ -34,9 +34,9 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.DisjunctionMaxQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryVisitor;
 import org.apache.lucene.search.QueryUtils;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.ScoreMode;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.similarities.BM25Similarity;
@@ -225,8 +225,7 @@ public class BlendedTermQueryTests extends ESTestCase {
 
         BlendedTermQuery blendedTermQuery = BlendedTermQuery.dismaxBlendedQuery(terms.toArray(new Term[0]), random().nextFloat());
         Set<Term> extracted = new HashSet<>();
-        IndexSearcher searcher = new IndexSearcher(new MultiReader());
-        searcher.createWeight(searcher.rewrite(blendedTermQuery), ScoreMode.COMPLETE_NO_SCORES, 1f).extractTerms(extracted);
+        new IndexSearcher(new MultiReader()).rewrite(blendedTermQuery).visit(QueryVisitor.termCollector(extracted));
         assertThat(extracted.size(), equalTo(terms.size()));
         assertThat(extracted, containsInAnyOrder(terms.toArray(new Term[0])));
     }

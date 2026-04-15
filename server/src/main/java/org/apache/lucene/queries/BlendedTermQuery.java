@@ -20,6 +20,7 @@ package org.apache.lucene.queries;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReaderContext;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermStates;
@@ -89,7 +90,7 @@ public abstract class BlendedTermQuery extends Query {
         TermStates[] ctx = new TermStates[terms.length];
         int[] docFreqs = new int[ctx.length];
         for (int i = 0; i < terms.length; i++) {
-            ctx[i] = TermStates.build(context, terms[i], true);
+            ctx[i] = TermStates.build(new IndexSearcher(reader), terms[i], true);
             docFreqs[i] = ctx[i].docFreq();
         }
 

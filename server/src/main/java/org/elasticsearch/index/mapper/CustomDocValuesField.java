@@ -22,6 +22,8 @@ package org.elasticsearch.index.mapper;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.InvertableType;
+import org.apache.lucene.document.StoredValue;
 import org.apache.lucene.index.DocValuesType;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.IndexableFieldType;
@@ -71,6 +73,16 @@ public abstract class CustomDocValuesField implements IndexableField {
 
     @Override
     public TokenStream tokenStream(Analyzer analyzer, TokenStream reuse) {
+        return null;
+    }
+
+    @Override
+    public InvertableType invertableType() {
+        return InvertableType.BINARY;
+    }
+
+    @Override
+    public StoredValue storedValue() {
         return null;
     }
 

@@ -19,8 +19,9 @@
 
 package org.elasticsearch.common.geo;
 
-import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree;
-import org.apache.lucene.spatial.prefix.tree.QuadPrefixTree;
+// TODO: Lucene 9.x removed lucene-spatial-extras (prefix tree support)
+// import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree;
+// import org.apache.lucene.spatial.prefix.tree.QuadPrefixTree;
 import org.apache.lucene.util.SloppyMath;
 import org.elasticsearch.ElasticsearchParseException;
 import org.elasticsearch.common.unit.DistanceUnit;
@@ -169,7 +170,7 @@ public class GeoUtils {
     public static int quadTreeLevelsForPrecision(double meters) {
         assert meters >= 0;
         if(meters == 0) {
-            return QuadPrefixTree.MAX_LEVELS_POSSIBLE;
+            return 50; // was QuadPrefixTree.MAX_LEVELS_POSSIBLE
         } else {
             final double ratio = 1+(EARTH_POLAR_DISTANCE / EARTH_EQUATOR); // cell ratio
             final double width = Math.sqrt((meters*meters)/(ratio*ratio)); // convert to cell width
@@ -199,7 +200,7 @@ public class GeoUtils {
         assert meters >= 0;
 
         if(meters == 0) {
-            return GeohashPrefixTree.getMaxLevelsPossible();
+            return 24; // was GeohashPrefixTree.getMaxLevelsPossible()
         } else {
             final double ratio = 1+(EARTH_POLAR_DISTANCE / EARTH_EQUATOR); // cell ratio
             final double width = Math.sqrt((meters*meters)/(ratio*ratio)); // convert to cell width
@@ -610,8 +611,8 @@ public class GeoUtils {
      * 4 decimal degrees
      */
     public static double planeDistance(double lat1, double lon1, double lat2, double lon2) {
-        double x = (lon2 - lon1) * SloppyMath.TO_RADIANS * Math.cos((lat2 + lat1) / 2.0 * SloppyMath.TO_RADIANS);
-        double y = (lat2 - lat1) * SloppyMath.TO_RADIANS;
+        double x = Math.toRadians(lon2 - lon1) * Math.cos(Math.toRadians((lat2 + lat1) / 2.0));
+        double y = Math.toRadians(lat2 - lat1);
         return Math.sqrt(x * x + y * y) * EARTH_MEAN_RADIUS;
     }
 

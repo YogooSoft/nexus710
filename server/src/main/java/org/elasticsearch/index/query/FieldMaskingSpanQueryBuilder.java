@@ -20,8 +20,9 @@
 package org.elasticsearch.index.query;
 
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.spans.FieldMaskingSpanQuery;
-import org.apache.lucene.search.spans.SpanQuery;
+// TODO: Lucene 9.x migration - spans removed
+// import org.apache.lucene.search.spans.FieldMaskingSpanQuery;
+// import org.apache.lucene.search.spans.SpanQuery;
 import org.elasticsearch.common.ParseField;
 import org.elasticsearch.common.ParsingException;
 import org.elasticsearch.common.Strings;
@@ -29,7 +30,7 @@ import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.index.mapper.MappedFieldType;
+// import org.elasticsearch.index.mapper.MappedFieldType; // unused after spans removal
 
 import java.io.IOException;
 import java.util.Objects;
@@ -149,16 +150,10 @@ public class FieldMaskingSpanQueryBuilder extends AbstractQueryBuilder<FieldMask
         return queryBuilder;
     }
 
+    // TODO: Lucene 9.x migration - spans removed
     @Override
-    protected SpanQuery doToQuery(QueryShardContext context) throws IOException {
-        String fieldInQuery = fieldName;
-        MappedFieldType fieldType = context.fieldMapper(fieldName);
-        if (fieldType != null) {
-            fieldInQuery = fieldType.name();
-        }
-        Query innerQuery = queryBuilder.toQuery(context);
-        assert innerQuery instanceof SpanQuery;
-        return new FieldMaskingSpanQuery((SpanQuery)innerQuery, fieldInQuery);
+    protected Query doToQuery(QueryShardContext context) throws IOException {
+        throw new UnsupportedOperationException("field_masking_span queries are not supported in Lucene 9.x - spans API was removed");
     }
 
     @Override

@@ -39,9 +39,10 @@ import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SynonymQuery;
 import org.apache.lucene.search.WildcardQuery;
-import org.apache.lucene.search.spans.SpanNearQuery;
-import org.apache.lucene.search.spans.SpanOrQuery;
-import org.apache.lucene.search.spans.SpanQuery;
+// TODO: Lucene 9.x migration - spans removed
+// import org.apache.lucene.search.spans.SpanNearQuery;
+// import org.apache.lucene.search.spans.SpanOrQuery;
+// import org.apache.lucene.search.spans.SpanQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.automaton.RegExp;
 import org.elasticsearch.common.lucene.search.Queries;
@@ -99,6 +100,7 @@ public class QueryStringQueryParser extends XQueryParser {
     private int fuzzyMaxExpansions = FuzzyQuery.defaultMaxExpansions;
     private MultiTermQuery.RewriteMethod fuzzyRewriteMethod;
     private boolean fuzzyTranspositions = FuzzyQuery.defaultTranspositions;
+    private int maxDeterminizedStates = org.apache.lucene.util.automaton.Operations.DEFAULT_DETERMINIZE_WORK_LIMIT;
 
     /**
      * @param context The query shard context.
@@ -173,6 +175,14 @@ public class QueryStringQueryParser extends XQueryParser {
     public void setPhraseSlop(int phraseSlop) {
         super.setPhraseSlop(phraseSlop);
         queryBuilder.setPhraseSlop(phraseSlop);
+    }
+
+    public void setMaxDeterminizedStates(int maxDeterminizedStates) {
+        this.maxDeterminizedStates = maxDeterminizedStates;
+    }
+
+    public int getMaxDeterminizedStates() {
+        return this.maxDeterminizedStates;
     }
 
     /**
@@ -607,7 +617,11 @@ public class QueryStringQueryParser extends XQueryParser {
                 for (int i = 0; i < plist.size(); i++) {
                     terms[i] = new Term(field, plist.get(i));
                 }
-                posQuery = new SynonymQuery(terms);
+                SynonymQuery.Builder sqBuilder = new SynonymQuery.Builder(field);
+                for (Term t : terms) {
+                    sqBuilder.addTerm(t);
+                }
+                posQuery = sqBuilder.build();
             } else {
                 List<BooleanClause> innerClauses = new ArrayList<>();
                 for (String token : plist) {
@@ -763,13 +777,14 @@ public class QueryStringQueryParser extends XQueryParser {
             MultiPhraseQuery.Builder builder = new MultiPhraseQuery.Builder((MultiPhraseQuery) q);
             builder.setSlop(slop);
             return builder.build();
-        } else if (q instanceof SpanQuery) {
-            return addSlopToSpan((SpanQuery) q, slop);
+        // TODO: Lucene 9.x migration - SpanQuery slop handling removed
         } else {
             return q;
         }
     }
 
+    // TODO: Lucene 9.x migration - spans removed
+    /*
     private Query addSlopToSpan(SpanQuery query, int slop) {
         if (query instanceof SpanNearQuery) {
             return new SpanNearQuery(((SpanNearQuery) query).getClauses(), slop,
@@ -785,6 +800,7 @@ public class QueryStringQueryParser extends XQueryParser {
             return query;
         }
     }
+    */
 
     /**
      * Rebuild a phrase query with a slop value

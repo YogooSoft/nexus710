@@ -196,15 +196,9 @@ class ExitableDirectoryReader extends FilterDirectoryReader {
         }
 
         @Override
-        public void intersect(IntersectVisitor visitor) throws IOException {
+        public PointTree getPointTree() throws IOException {
             queryCancellation.checkCancelled();
-            in.intersect(new ExitableIntersectVisitor(visitor, queryCancellation));
-        }
-
-        @Override
-        public long estimatePointCount(IntersectVisitor visitor) {
-            queryCancellation.checkCancelled();
-            return in.estimatePointCount(visitor);
+            return new ExitablePointTree(in.getPointTree(), queryCancellation);
         }
 
         @Override
@@ -247,6 +241,66 @@ class ExitableDirectoryReader extends FilterDirectoryReader {
         public int getDocCount() {
             queryCancellation.checkCancelled();
             return in.getDocCount();
+        }
+    }
+
+    private static class ExitablePointTree implements PointValues.PointTree {
+
+        private final PointValues.PointTree in;
+        private final QueryCancellation queryCancellation;
+
+        private ExitablePointTree(PointValues.PointTree in, QueryCancellation queryCancellation) {
+            this.in = in;
+            this.queryCancellation = queryCancellation;
+        }
+
+        @Override
+        public PointValues.PointTree clone() {
+            return new ExitablePointTree(in.clone(), queryCancellation);
+        }
+
+        @Override
+        public boolean moveToChild() throws IOException {
+            queryCancellation.checkCancelled();
+            return in.moveToChild();
+        }
+
+        @Override
+        public boolean moveToSibling() throws IOException {
+            queryCancellation.checkCancelled();
+            return in.moveToSibling();
+        }
+
+        @Override
+        public boolean moveToParent() throws IOException {
+            return in.moveToParent();
+        }
+
+        @Override
+        public byte[] getMinPackedValue() {
+            return in.getMinPackedValue();
+        }
+
+        @Override
+        public byte[] getMaxPackedValue() {
+            return in.getMaxPackedValue();
+        }
+
+        @Override
+        public long size() {
+            return in.size();
+        }
+
+        @Override
+        public void visitDocIDs(PointValues.IntersectVisitor visitor) throws IOException {
+            queryCancellation.checkCancelled();
+            in.visitDocIDs(new ExitableIntersectVisitor(visitor, queryCancellation));
+        }
+
+        @Override
+        public void visitDocValues(PointValues.IntersectVisitor visitor) throws IOException {
+            queryCancellation.checkCancelled();
+            in.visitDocValues(new ExitableIntersectVisitor(visitor, queryCancellation));
         }
     }
 

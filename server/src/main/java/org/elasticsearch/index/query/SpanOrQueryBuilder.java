@@ -20,8 +20,9 @@
 package org.elasticsearch.index.query;
 
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.spans.SpanOrQuery;
-import org.apache.lucene.search.spans.SpanQuery;
+// TODO: Lucene 9.x migration - spans removed
+// import org.apache.lucene.search.spans.SpanOrQuery;
+// import org.apache.lucene.search.spans.SpanQuery;
 import org.elasticsearch.common.ParseField;
 import org.elasticsearch.common.ParsingException;
 import org.elasticsearch.common.io.stream.StreamInput;
@@ -38,7 +39,7 @@ import java.util.Objects;
 import static org.elasticsearch.index.query.SpanQueryBuilder.SpanQueryBuilderUtil.checkNoBoost;
 
 /**
- * Span query that matches the union of its clauses. Maps to {@link SpanOrQuery}.
+ * Span query that matches the union of its clauses. Maps to SpanOrQuery.
  */
 public class SpanOrQueryBuilder extends AbstractQueryBuilder<SpanOrQueryBuilder> implements SpanQueryBuilder {
     public static final String NAME = "span_or";
@@ -148,15 +149,10 @@ public class SpanOrQueryBuilder extends AbstractQueryBuilder<SpanOrQueryBuilder>
         return queryBuilder;
     }
 
+    // TODO: Lucene 9.x migration - spans removed
     @Override
     protected Query doToQuery(QueryShardContext context) throws IOException {
-        SpanQuery[] spanQueries = new SpanQuery[clauses.size()];
-        for (int i = 0; i < clauses.size(); i++) {
-            Query query = clauses.get(i).toQuery(context);
-            assert query instanceof SpanQuery;
-            spanQueries[i] = (SpanQuery) query;
-        }
-        return new SpanOrQuery(spanQueries);
+        throw new UnsupportedOperationException("span_or queries are not supported in Lucene 9.x - spans API was removed");
     }
 
     @Override

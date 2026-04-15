@@ -20,8 +20,9 @@
 package org.elasticsearch.index.query;
 
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.spans.SpanFirstQuery;
-import org.apache.lucene.search.spans.SpanQuery;
+// TODO: Lucene 9.x migration - spans removed
+// import org.apache.lucene.search.spans.SpanFirstQuery;
+// import org.apache.lucene.search.spans.SpanQuery;
 import org.elasticsearch.common.ParseField;
 import org.elasticsearch.common.ParsingException;
 import org.elasticsearch.common.io.stream.StreamInput;
@@ -147,11 +148,10 @@ public class SpanFirstQueryBuilder extends AbstractQueryBuilder<SpanFirstQueryBu
         return queryBuilder;
     }
 
+    // TODO: Lucene 9.x migration - spans removed
     @Override
     protected Query doToQuery(QueryShardContext context) throws IOException {
-        Query innerSpanQuery = matchBuilder.toQuery(context);
-        assert innerSpanQuery instanceof SpanQuery;
-        return new SpanFirstQuery((SpanQuery) innerSpanQuery, end);
+        throw new UnsupportedOperationException("span_first queries are not supported in Lucene 9.x - spans API was removed");
     }
 
     @Override

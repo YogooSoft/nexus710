@@ -20,7 +20,7 @@
 package org.elasticsearch.action.search;
 
 import org.apache.lucene.store.ByteArrayDataInput;
-import org.apache.lucene.store.RAMOutputStream;
+import org.apache.lucene.store.ByteBuffersDataOutput;
 import org.elasticsearch.Version;
 import org.elasticsearch.common.util.concurrent.AtomicArray;
 import org.elasticsearch.search.SearchPhaseResult;
@@ -43,7 +43,8 @@ final class TransportSearchHelper {
 
     static String buildScrollId(AtomicArray<? extends SearchPhaseResult> searchPhaseResults, Version version) {
         boolean includeContextUUID = version.onOrAfter(Version.V_7_7_0);
-        try (RAMOutputStream out = new RAMOutputStream()) {
+        try {
+            ByteBuffersDataOutput out = new ByteBuffersDataOutput();
             if (includeContextUUID) {
                 out.writeString(INCLUDE_CONTEXT_UUID);
             }
@@ -62,8 +63,7 @@ final class TransportSearchHelper {
                     out.writeString(searchShardTarget.getNodeId());
                 }
             }
-            byte[] bytes = new byte[(int) out.getFilePointer()];
-            out.writeTo(bytes, 0);
+            byte[] bytes = out.toArrayCopy();
             return Base64.getUrlEncoder().encodeToString(bytes);
         } catch (IOException e) {
             throw new UncheckedIOException(e);

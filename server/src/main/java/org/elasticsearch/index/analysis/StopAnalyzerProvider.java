@@ -35,7 +35,6 @@ public class StopAnalyzerProvider extends AbstractIndexAnalyzerProvider<StopAnal
         CharArraySet stopWords = Analysis.parseStopWords(
             env, settings, EnglishAnalyzer.ENGLISH_STOP_WORDS_SET);
         this.stopAnalyzer = new StopAnalyzer(stopWords);
-        this.stopAnalyzer.setVersion(version);
     }
 
     @Override

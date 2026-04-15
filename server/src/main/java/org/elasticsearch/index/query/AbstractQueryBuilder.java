@@ -22,8 +22,9 @@ package org.elasticsearch.index.query;
 import org.apache.lucene.search.BoostQuery;
 import org.apache.lucene.search.MatchNoDocsQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.spans.SpanBoostQuery;
-import org.apache.lucene.search.spans.SpanQuery;
+// TODO: Lucene 9.x migration - spans removed
+// import org.apache.lucene.search.spans.SpanBoostQuery;
+// import org.apache.lucene.search.spans.SpanQuery;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.common.ParseField;
 import org.elasticsearch.common.ParsingException;
@@ -103,9 +104,8 @@ public abstract class AbstractQueryBuilder<QB extends AbstractQueryBuilder<QB>> 
         Query query = doToQuery(context);
         if (query != null) {
             if (boost != DEFAULT_BOOST) {
-                if (query instanceof SpanQuery) {
-                    query = new SpanBoostQuery((SpanQuery) query, boost);
-                } else if (query instanceof MatchNoDocsQuery == false) {
+                // TODO: Lucene 9.x migration - spans removed (SpanBoostQuery no longer available)
+                if (query instanceof MatchNoDocsQuery == false) {
                     query = new BoostQuery(query, boost);
                 }
             }

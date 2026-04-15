@@ -47,7 +47,8 @@ class CustomFieldHighlighter extends FieldHighlighter {
                            PassageScorer passageScorer, int maxPassages, int maxNoHighlightPassages,
                            PassageFormatter passageFormatter, int noMatchSize) {
         super(field, fieldOffsetStrategy, breakIterator, passageScorer, maxPassages,
-            maxNoHighlightPassages, passageFormatter);
+            maxNoHighlightPassages, passageFormatter,
+            Comparator.comparingInt(Passage::getStartOffset));
         this.breakIteratorLocale = breakIteratorLocale;
         this.noMatchSize = noMatchSize;
     }

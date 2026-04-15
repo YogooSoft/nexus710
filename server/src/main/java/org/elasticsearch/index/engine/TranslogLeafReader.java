@@ -19,10 +19,14 @@
 package org.elasticsearch.index.engine;
 
 import org.apache.lucene.index.BinaryDocValues;
+import org.apache.lucene.index.ByteVectorValues;
 import org.apache.lucene.index.DocValuesType;
 import org.apache.lucene.index.FieldInfo;
+import org.apache.lucene.index.VectorEncoding;
+import org.apache.lucene.index.VectorSimilarityFunction;
 import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.Fields;
+import org.apache.lucene.index.FloatVectorValues;
 import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.LeafMetaData;
 import org.apache.lucene.index.LeafReader;
@@ -32,7 +36,10 @@ import org.apache.lucene.index.SortedDocValues;
 import org.apache.lucene.index.SortedNumericDocValues;
 import org.apache.lucene.index.SortedSetDocValues;
 import org.apache.lucene.index.StoredFieldVisitor;
+import org.apache.lucene.index.StoredFields;
+import org.apache.lucene.index.TermVectors;
 import org.apache.lucene.index.Terms;
+import org.apache.lucene.search.KnnCollector;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.common.util.set.Sets;
@@ -55,13 +62,13 @@ public final class TranslogLeafReader extends LeafReader {
     private final Translog.Index operation;
     private static final FieldInfo FAKE_SOURCE_FIELD
         = new FieldInfo(SourceFieldMapper.NAME, 1, false, false, false, IndexOptions.NONE, DocValuesType.NONE, -1, Collections.emptyMap(),
-        0, 0, 0, false);
+        0, 0, 0, 0, VectorEncoding.FLOAT32, VectorSimilarityFunction.EUCLIDEAN, false, false);
     private static final FieldInfo FAKE_ROUTING_FIELD
         = new FieldInfo(RoutingFieldMapper.NAME, 2, false, false, false, IndexOptions.NONE, DocValuesType.NONE, -1, Collections.emptyMap(),
-        0, 0, 0, false);
+        0, 0, 0, 0, VectorEncoding.FLOAT32, VectorSimilarityFunction.EUCLIDEAN, false, false);
     private static final FieldInfo FAKE_ID_FIELD
         = new FieldInfo(IdFieldMapper.NAME, 3, false, false, false, IndexOptions.NONE, DocValuesType.NONE, -1, Collections.emptyMap(),
-        0, 0, 0, false);
+        0, 0, 0, 0, VectorEncoding.FLOAT32, VectorSimilarityFunction.EUCLIDEAN, false, false);
     public static Set<String> ALL_FIELD_NAMES = Sets.newHashSet(FAKE_SOURCE_FIELD.name, FAKE_ROUTING_FIELD.name, FAKE_ID_FIELD.name);
 
     TranslogLeafReader(Translog.Index operation) {
@@ -123,6 +130,24 @@ public final class TranslogLeafReader extends LeafReader {
     }
 
     @Override
+    public FloatVectorValues getFloatVectorValues(String field) {
+        return null;
+    }
+
+    @Override
+    public ByteVectorValues getByteVectorValues(String field) {
+        return null;
+    }
+
+    @Override
+    public void searchNearestVectors(String field, float[] target, KnnCollector k, Bits acceptDocs) {
+    }
+
+    @Override
+    public void searchNearestVectors(String field, byte[] target, KnnCollector k, Bits acceptDocs) {
+    }
+
+    @Override
     public void checkIntegrity() {
 
     }
@@ -134,6 +159,11 @@ public final class TranslogLeafReader extends LeafReader {
 
     @Override
     public Fields getTermVectors(int docID) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public TermVectors termVectors() {
         throw new UnsupportedOperationException();
     }
 
@@ -158,7 +188,7 @@ public final class TranslogLeafReader extends LeafReader {
             visitor.binaryField(FAKE_SOURCE_FIELD, operation.source().toBytesRef().bytes);
         }
         if (operation.routing() != null && visitor.needsField(FAKE_ROUTING_FIELD) == StoredFieldVisitor.Status.YES) {
-            visitor.stringField(FAKE_ROUTING_FIELD, operation.routing().getBytes(StandardCharsets.UTF_8));
+            visitor.stringField(FAKE_ROUTING_FIELD, operation.routing());
         }
         if (visitor.needsField(FAKE_ID_FIELD) == StoredFieldVisitor.Status.YES) {
             BytesRef bytesRef = Uid.encodeId(operation.id());
@@ -166,6 +196,16 @@ public final class TranslogLeafReader extends LeafReader {
             System.arraycopy(bytesRef.bytes, bytesRef.offset, id, 0, bytesRef.length);
             visitor.binaryField(FAKE_ID_FIELD, id);
         }
+    }
+
+    @Override
+    public StoredFields storedFields() throws IOException {
+        return new StoredFields() {
+            @Override
+            public void document(int docID, StoredFieldVisitor visitor) throws IOException {
+                TranslogLeafReader.this.document(docID, visitor);
+            }
+        };
     }
 
     @Override

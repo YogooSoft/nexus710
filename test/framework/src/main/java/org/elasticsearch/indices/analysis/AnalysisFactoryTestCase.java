@@ -19,8 +19,8 @@
 
 package org.elasticsearch.indices.analysis;
 
-import org.apache.lucene.analysis.util.TokenFilterFactory;
-import org.apache.lucene.analysis.util.TokenizerFactory;
+import org.apache.lucene.analysis.TokenFilterFactory;
+import org.apache.lucene.analysis.TokenizerFactory;
 import org.elasticsearch.common.collect.MapBuilder;
 import org.elasticsearch.index.analysis.HunspellTokenFilterFactory;
 import org.elasticsearch.index.analysis.ShingleTokenFilterFactory;
@@ -270,7 +270,7 @@ public abstract class AnalysisFactoryTestCase extends ESTestCase {
 
     public void testTokenizers() {
         Set<String> missing = new TreeSet<String>();
-        missing.addAll(org.apache.lucene.analysis.util.TokenizerFactory.availableTokenizers()
+        missing.addAll(org.apache.lucene.analysis.TokenizerFactory.availableTokenizers()
             .stream().map(key -> key.toLowerCase(Locale.ROOT)).collect(Collectors.toSet()));
         missing.removeAll(getTokenizers().keySet());
         assertTrue("new tokenizers found, please update KNOWN_TOKENIZERS: " + missing.toString(), missing.isEmpty());
@@ -278,7 +278,7 @@ public abstract class AnalysisFactoryTestCase extends ESTestCase {
 
     public void testCharFilters() {
         Set<String> missing = new TreeSet<String>();
-        missing.addAll(org.apache.lucene.analysis.util.CharFilterFactory.availableCharFilters()
+        missing.addAll(org.apache.lucene.analysis.CharFilterFactory.availableCharFilters()
             .stream().map(key -> key.toLowerCase(Locale.ROOT)).collect(Collectors.toSet()));
         missing.removeAll(getCharFilters().keySet());
         assertTrue("new charfilters found, please update KNOWN_CHARFILTERS: " + missing.toString(), missing.isEmpty());
@@ -286,7 +286,7 @@ public abstract class AnalysisFactoryTestCase extends ESTestCase {
 
     public void testTokenFilters() {
         Set<String> missing = new TreeSet<String>();
-        missing.addAll(org.apache.lucene.analysis.util.TokenFilterFactory.availableTokenFilters()
+        missing.addAll(org.apache.lucene.analysis.TokenFilterFactory.availableTokenFilters()
             .stream().map(key -> key.toLowerCase(Locale.ROOT)).collect(Collectors.toSet()));
         missing.removeAll(getTokenFilters().keySet());
         assertTrue("new tokenfilters found, please update KNOWN_TOKENFILTERS: " + missing.toString(), missing.isEmpty());

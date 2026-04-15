@@ -39,10 +39,11 @@ import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.spans.FieldMaskingSpanQuery;
-import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
-import org.apache.lucene.search.spans.SpanQuery;
-import org.apache.lucene.search.spans.SpanTermQuery;
+// Span queries removed in Lucene 9.x
+// import org.apache.lucene.search.spans.FieldMaskingSpanQuery;
+// import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
+// import org.apache.lucene.search.spans.SpanQuery;
+// import org.apache.lucene.search.spans.SpanTermQuery;
 import org.apache.lucene.util.automaton.Automata;
 import org.apache.lucene.util.automaton.Automaton;
 import org.apache.lucene.util.automaton.Operations;
@@ -318,17 +319,6 @@ public class SearchAsYouTypeFieldMapper extends ParametrizedFieldMapper {
             return shingleField.phrasePrefixQuery(stream, 0, maxExpansions);
         }
 
-        @Override
-        public SpanQuery spanPrefixQuery(String value, SpanMultiTermQueryWrapper.SpanRewriteMethod method, QueryShardContext context) {
-            if (prefixField != null && prefixField.termLengthWithinBounds(value.length())) {
-                return new FieldMaskingSpanQuery(new SpanTermQuery(new Term(prefixField.name(), indexedValueForSearch(value))), name());
-            } else {
-                SpanMultiTermQueryWrapper<?> spanMulti =
-                    new SpanMultiTermQueryWrapper<>(new PrefixQuery(new Term(name(), indexedValueForSearch(value))));
-                spanMulti.setRewriteMethod(method);
-                return spanMulti;
-            }
-        }
     }
 
     /**
@@ -527,17 +517,6 @@ public class SearchAsYouTypeFieldMapper extends ParametrizedFieldMapper {
                 prefixFieldName, prefixFieldType::termLengthWithinBounds);
         }
 
-        @Override
-        public SpanQuery spanPrefixQuery(String value, SpanMultiTermQueryWrapper.SpanRewriteMethod method, QueryShardContext context) {
-            if (prefixFieldType != null && prefixFieldType.termLengthWithinBounds(value.length())) {
-                return new FieldMaskingSpanQuery(new SpanTermQuery(new Term(prefixFieldType.name(), indexedValueForSearch(value))), name());
-            } else {
-                SpanMultiTermQueryWrapper<?> spanMulti =
-                    new SpanMultiTermQueryWrapper<>(new PrefixQuery(new Term(name(), indexedValueForSearch(value))));
-                spanMulti.setRewriteMethod(method);
-                return spanMulti;
-            }
-        }
     }
 
     private final boolean index;

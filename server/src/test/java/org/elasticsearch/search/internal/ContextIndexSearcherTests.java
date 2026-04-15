@@ -404,11 +404,6 @@ public class ContextIndexSearcherTests extends ESTestCase {
         }
 
         @Override
-        public void extractTerms(Set<Term> terms) {
-            weight.extractTerms(terms);
-        }
-
-        @Override
         public Explanation explain(LeafReaderContext context, int doc) throws IOException {
             return weight.explain(context, doc);
         }

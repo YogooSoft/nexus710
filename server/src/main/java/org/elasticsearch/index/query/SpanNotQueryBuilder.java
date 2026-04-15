@@ -20,8 +20,9 @@
 package org.elasticsearch.index.query;
 
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.spans.SpanNotQuery;
-import org.apache.lucene.search.spans.SpanQuery;
+// TODO: Lucene 9.x migration - spans removed
+// import org.apache.lucene.search.spans.SpanNotQuery;
+// import org.apache.lucene.search.spans.SpanQuery;
 import org.elasticsearch.common.ParseField;
 import org.elasticsearch.common.ParsingException;
 import org.elasticsearch.common.io.stream.StreamInput;
@@ -238,15 +239,10 @@ public class SpanNotQueryBuilder extends AbstractQueryBuilder<SpanNotQueryBuilde
         return spanNotQuery;
     }
 
+    // TODO: Lucene 9.x migration - spans removed
     @Override
     protected Query doToQuery(QueryShardContext context) throws IOException {
-
-        Query includeQuery = this.include.toQuery(context);
-        assert includeQuery instanceof SpanQuery;
-        Query excludeQuery = this.exclude.toQuery(context);
-        assert excludeQuery instanceof SpanQuery;
-
-        return new SpanNotQuery((SpanQuery) includeQuery, (SpanQuery) excludeQuery, pre, post);
+        throw new UnsupportedOperationException("span_not queries are not supported in Lucene 9.x - spans API was removed");
     }
 
     @Override

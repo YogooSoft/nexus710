@@ -55,7 +55,6 @@ import org.junit.BeforeClass;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
@@ -227,11 +226,6 @@ public class QueryProfilerTests extends ESTestCase {
         @Override
         public Weight createWeight(IndexSearcher searcher, ScoreMode scoreMode, float boost) throws IOException {
             return new Weight(this) {
-                @Override
-                public void extractTerms(Set<Term> terms) {
-                    throw new UnsupportedOperationException();
-                }
-
                 @Override
                 public Explanation explain(LeafReaderContext context, int doc) throws IOException {
                     throw new UnsupportedOperationException();

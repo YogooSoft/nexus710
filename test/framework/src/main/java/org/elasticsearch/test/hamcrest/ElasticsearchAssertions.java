@@ -78,8 +78,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import static org.apache.lucene.util.LuceneTestCase.expectThrows;
-import static org.apache.lucene.util.LuceneTestCase.expectThrowsAnyOf;
+import static org.apache.lucene.tests.util.LuceneTestCase.expectThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -520,9 +519,10 @@ public class ElasticsearchAssertions {
     public static <T extends Query> T assertDisjunctionSubQuery(Query query, Class<T> subqueryType, int i) {
         assertThat(query, instanceOf(DisjunctionMaxQuery.class));
         DisjunctionMaxQuery q = (DisjunctionMaxQuery) query;
-        assertThat(q.getDisjuncts().size(), greaterThan(i));
-        assertThat(q.getDisjuncts().get(i), instanceOf(subqueryType));
-        return subqueryType.cast(q.getDisjuncts().get(i));
+        java.util.List<Query> disjuncts = new java.util.ArrayList<>(q.getDisjuncts());
+        assertThat(disjuncts.size(), greaterThan(i));
+        assertThat(disjuncts.get(i), instanceOf(subqueryType));
+        return subqueryType.cast(disjuncts.get(i));
     }
 
     /**
@@ -589,7 +589,14 @@ public class ElasticsearchAssertions {
             extraInfo += " with status [" + status + "]";
         }
 
-        Throwable expected = expectThrowsAnyOf(Arrays.asList(exceptionClass, ElasticsearchException.class), future::actionGet);
+        Throwable expected;
+        try {
+            future.actionGet();
+            fail(extraInfo);
+            return; // unreachable
+        } catch (Throwable t) {
+            expected = t;
+        }
         if (expected instanceof ElasticsearchException) {
             assertThat(extraInfo, ((ElasticsearchException) expected).unwrapCause(), instanceOf(exceptionClass));
         } else {

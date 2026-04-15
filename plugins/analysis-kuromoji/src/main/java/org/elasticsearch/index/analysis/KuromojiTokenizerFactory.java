@@ -23,7 +23,6 @@ import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.ja.JapaneseTokenizer;
 import org.apache.lucene.analysis.ja.JapaneseTokenizer.Mode;
 import org.apache.lucene.analysis.ja.dict.UserDictionary;
-import org.apache.lucene.analysis.ja.util.CSVUtil;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
@@ -76,7 +75,7 @@ public class KuromojiTokenizerFactory extends AbstractTokenizerFactory {
             for (String line : ruleList) {
                 // ignore comments
                 if (line.startsWith("#") == false) {
-                    String[] values = CSVUtil.parse(line);
+                    String[] values = line.split(",");
                     if (dup.add(values[0]) == false) {
                         throw new IllegalArgumentException("Found duplicate term [" + values[0] + "] in user dictionary " +
                             "at line [" + lineNum + "]");
