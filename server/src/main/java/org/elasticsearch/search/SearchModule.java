@@ -50,6 +50,7 @@ import org.elasticsearch.index.query.IntervalQueryBuilder;
 import org.elasticsearch.index.query.IntervalsSourceProvider;
 import org.elasticsearch.index.query.MatchAllQueryBuilder;
 import org.elasticsearch.index.query.MatchBoolPrefixQueryBuilder;
+import org.elasticsearch.index.query.NexusKnnQueryBuilder;
 import org.elasticsearch.index.query.MatchNoneQueryBuilder;
 import org.elasticsearch.index.query.MatchPhrasePrefixQueryBuilder;
 import org.elasticsearch.index.query.MatchPhraseQueryBuilder;
@@ -920,6 +921,8 @@ public class SearchModule {
         if (ShapesAvailability.JTS_AVAILABLE && ShapesAvailability.SPATIAL4J_AVAILABLE) {
             registerQuery(new QuerySpec<>(GeoShapeQueryBuilder.NAME, GeoShapeQueryBuilder::new, GeoShapeQueryBuilder::fromXContent));
         }
+
+        registerQuery(new QuerySpec<>(NexusKnnQueryBuilder.NAME, NexusKnnQueryBuilder::new, NexusKnnQueryBuilder::fromXContent));
 
         registerFromPlugin(plugins, SearchPlugin::getQueries, this::registerQuery);
     }

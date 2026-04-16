@@ -1032,8 +1032,8 @@ public class GetTermVectorsIT extends AbstractTermVectorsTestCase {
         List<Integer> shardIds = Arrays.stream(searchShardsResponse.getGroups()).map(s -> s.getShardId().id()).collect(Collectors.toList());
 
         // request termvectors of artificial document from each shard
-        int sumTotalTermFreq = 0;
-        int sumDocFreq = 0;
+        long sumTotalTermFreq = 0;
+        long sumDocFreq = 0;
         for (Integer shardId : shardIds) {
             TermVectorsResponse tvResponse = client().prepareTermVectors()
                     .setIndex("test")

@@ -163,12 +163,12 @@ public class CircuitBreakerServiceIT extends ESIntegTestCase {
         NodesStatsResponse stats = client.admin().cluster().prepareNodesStats()
             .addMetric(BREAKER.metricName())
             .get();
-        int breaks = 0;
+        long breaks = 0;
         for (NodeStats stat : stats.getNodes()) {
             CircuitBreakerStats breakerStats = stat.getBreaker().getStats(CircuitBreaker.FIELDDATA);
             breaks += breakerStats.getTrippedCount();
         }
-        assertThat(breaks, greaterThanOrEqualTo(1));
+        assertThat(breaks, greaterThanOrEqualTo(1L));
     }
 
     public void testRamAccountingTermsEnum() throws Exception {
@@ -217,12 +217,12 @@ public class CircuitBreakerServiceIT extends ESIntegTestCase {
         NodesStatsResponse stats = client.admin().cluster().prepareNodesStats()
             .addMetric(BREAKER.metricName())
             .get();
-        int breaks = 0;
+        long breaks = 0;
         for (NodeStats stat : stats.getNodes()) {
             CircuitBreakerStats breakerStats = stat.getBreaker().getStats(CircuitBreaker.FIELDDATA);
             breaks += breakerStats.getTrippedCount();
         }
-        assertThat(breaks, greaterThanOrEqualTo(1));
+        assertThat(breaks, greaterThanOrEqualTo(1L));
     }
 
     public void testRequestBreaker() throws Exception {

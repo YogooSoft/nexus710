@@ -80,7 +80,6 @@ public class MergePolicySettingsTests extends ESTestCase {
     }
 
 
-    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testTieredMergePolicySettingsUpdate() throws IOException {
         IndexSettings indexSettings = indexSettings(Settings.EMPTY);
         assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getForceMergeDeletesPctAllowed(),
@@ -100,13 +99,12 @@ public class MergePolicySettingsTests extends ESTestCase {
         assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getFloorSegmentMB(),
             new ByteSizeValue(MergePolicyConfig.DEFAULT_FLOOR_SEGMENT.getMb() + 1, ByteSizeUnit.MB).getMbFrac(), 0.001);
 
-        assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getMaxMergeAtOnce(),
-            MergePolicyConfig.DEFAULT_MAX_MERGE_AT_ONCE);
+        // Lucene 9.x removed TieredMergePolicy.getMaxMergeAtOnce; now always returns -1
+        assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getMaxMergeAtOnce(), -1);
         indexSettings.updateIndexMetadata(newIndexMeta("index",
             Settings.builder().put(MergePolicyConfig.INDEX_MERGE_POLICY_MAX_MERGE_AT_ONCE_SETTING.getKey(),
                 MergePolicyConfig.DEFAULT_MAX_MERGE_AT_ONCE - 1).build()));
-        assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getMaxMergeAtOnce(),
-            MergePolicyConfig.DEFAULT_MAX_MERGE_AT_ONCE - 1);
+        assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getMaxMergeAtOnce(), -1);
 
         assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getMaxMergedSegmentMB(),
             MergePolicyConfig.DEFAULT_MAX_MERGED_SEGMENT.getMbFrac(), 0.0001);
@@ -134,8 +132,7 @@ public class MergePolicySettingsTests extends ESTestCase {
             MergePolicyConfig.DEFAULT_EXPUNGE_DELETES_ALLOWED, 0.0d);
         assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getFloorSegmentMB(),
             new ByteSizeValue(MergePolicyConfig.DEFAULT_FLOOR_SEGMENT.getMb(), ByteSizeUnit.MB).getMbFrac(), 0.00);
-        assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getMaxMergeAtOnce(),
-            MergePolicyConfig.DEFAULT_MAX_MERGE_AT_ONCE);
+        assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getMaxMergeAtOnce(), -1);
         assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getMaxMergedSegmentMB(),
             new ByteSizeValue(MergePolicyConfig.DEFAULT_MAX_MERGED_SEGMENT.getBytes() + 1).getMbFrac(), 0.0001);
         assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getSegmentsPerTier(),

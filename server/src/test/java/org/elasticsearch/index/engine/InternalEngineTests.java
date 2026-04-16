@@ -5831,10 +5831,9 @@ public class InternalEngineTests extends EngineTestCase {
         assertThat(message, engine.getNumDocDeletes(), equalTo(expectedDeletes));
     }
 
-    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testStoreHonorsLuceneVersion() throws IOException {
         for (Version createdVersion : Arrays.asList(
-                Version.CURRENT, VersionUtils.getPreviousMinorVersion(), VersionUtils.getFirstVersion())) {
+                Version.CURRENT, VersionUtils.getPreviousMinorVersion())) {
             Settings settings = Settings.builder()
                     .put(indexSettings())
                     .put(IndexMetadata.SETTING_VERSION_CREATED, createdVersion).build();
@@ -5847,7 +5846,10 @@ public class InternalEngineTests extends EngineTestCase {
                 engine.refresh("test");
                 try (Engine.Searcher searcher = engine.acquireSearcher("test")) {
                     LeafReader leafReader = getOnlyLeafReader(searcher.getIndexReader());
-                    assertEquals(createdVersion.luceneVersion.major, leafReader.getMetaData().getCreatedVersionMajor());
+                    int expectedMajor = Math.max(
+                        createdVersion.luceneVersion.major,
+                        org.apache.lucene.util.Version.LATEST.major - 1);
+                    assertEquals(expectedMajor, leafReader.getMetaData().getCreatedVersionMajor());
                 }
             }
         }

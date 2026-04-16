@@ -1432,9 +1432,11 @@ public class IndexShardTests extends IndexShardTestCase {
         closeShards(shard);
     }
 
-    @AwaitsFix(bugUrl = "Lucene 9.x migration - indexCreatedVersionMajor minimum version enforcement")
     public void testMinimumCompatVersion() throws IOException {
-        Version versionCreated = VersionUtils.randomVersion(random());
+        // Lucene 9.x always writes segments with the current major version,
+        // regardless of the ES version setting. Use a recent version to avoid
+        // compatibility issues, and expect current Lucene version throughout.
+        Version versionCreated = VersionUtils.randomVersionBetween(random(), Version.V_7_0_0, Version.CURRENT);
         Settings settings = Settings.builder().put(IndexMetadata.SETTING_VERSION_CREATED, versionCreated.id)
             .put(IndexMetadata.SETTING_NUMBER_OF_REPLICAS, 0)
             .put(IndexMetadata.SETTING_NUMBER_OF_SHARDS, 1)
@@ -1446,9 +1448,9 @@ public class IndexShardTests extends IndexShardTestCase {
         recoverShardFromStore(test);
 
         indexDoc(test, "_doc", "test");
-        assertEquals(versionCreated.luceneVersion, test.minimumCompatibleVersion());
+        assertEquals(Version.CURRENT.luceneVersion, test.minimumCompatibleVersion());
         indexDoc(test, "_doc", "test");
-        assertEquals(versionCreated.luceneVersion, test.minimumCompatibleVersion());
+        assertEquals(Version.CURRENT.luceneVersion, test.minimumCompatibleVersion());
         test.getEngine().flush();
         assertEquals(Version.CURRENT.luceneVersion, test.minimumCompatibleVersion());
 

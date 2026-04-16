@@ -118,7 +118,7 @@ public class IndexingPressureIT extends ESIntegTestCase {
         final Releasable replicaRelease = blockReplicas(replicaThreadPool);
 
         final BulkRequest bulkRequest = new BulkRequest();
-        int totalRequestSize = 0;
+        long totalRequestSize = 0;
         for (int i = 0; i < 80; ++i) {
             IndexRequest request = new IndexRequest(INDEX_NAME).id(UUIDs.base64UUID())
                 .source(Collections.singletonMap("key", randomAlphaOfLength(50)));
@@ -229,7 +229,7 @@ public class IndexingPressureIT extends ESIntegTestCase {
 
     public void testWriteCanBeRejectedAtCoordinatingLevel() throws Exception {
         final BulkRequest bulkRequest = new BulkRequest();
-        int totalRequestSize = 0;
+        long totalRequestSize = 0;
         for (int i = 0; i < 80; ++i) {
             IndexRequest request = new IndexRequest(INDEX_NAME).id(UUIDs.base64UUID())
                 .source(Collections.singletonMap("key", randomAlphaOfLength(50)));
@@ -295,7 +295,7 @@ public class IndexingPressureIT extends ESIntegTestCase {
 
     public void testWriteCanBeRejectedAtPrimaryLevel() throws Exception {
         final BulkRequest bulkRequest = new BulkRequest();
-        int totalRequestSize = 0;
+        long totalRequestSize = 0;
         for (int i = 0; i < 80; ++i) {
             IndexRequest request = new IndexRequest(INDEX_NAME).id(UUIDs.base64UUID())
                 .source(Collections.singletonMap("key", randomAlphaOfLength(50)));
@@ -368,7 +368,7 @@ public class IndexingPressureIT extends ESIntegTestCase {
             int thresholdToStopSending = 800 * 1024;
 
             ArrayList<ActionFuture<IndexResponse>> responses = new ArrayList<>();
-            int totalRequestSize = 0;
+            long totalRequestSize = 0;
             while (totalRequestSize < thresholdToStopSending) {
                 IndexRequest request = new IndexRequest(INDEX_NAME).id(UUIDs.base64UUID())
                     .source(Collections.singletonMap("key", randomAlphaOfLength(500)));

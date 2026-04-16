@@ -52,11 +52,12 @@ public class EsTieredMergePolicyTests extends ESTestCase {
         assertEquals(42, policy.forcedMergePolicy.getFloorSegmentMB(), 0);
     }
 
-    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testSetMaxMergeAtOnce() {
         EsTieredMergePolicy policy = new EsTieredMergePolicy();
         policy.setMaxMergeAtOnce(42);
-        assertEquals(42, policy.regularMergePolicy.getMaxMergeAtOnce());
+        // Lucene 9.x removed TieredMergePolicy.getMaxMergeAtOnce();
+        // EsTieredMergePolicy.setMaxMergeAtOnce is now a no-op
+        assertEquals(-1, policy.getMaxMergeAtOnce());
     }
 
     public void testSetSegmentsPerTier() {

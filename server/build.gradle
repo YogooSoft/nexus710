@@ -136,6 +136,14 @@ tasks.withType(JavaCompile).configureEach {
     options.compilerArgs << "-Xlint:-cast,-rawtypes,-unchecked"
 }
 
+tasks.named("internalClusterTest").configure {
+    classpath = classpath.filter { f ->
+        !(f.name == "elasticsearch-${project.version}.jar"
+          && f.parentFile?.name == 'distributions'
+          && f.parentFile?.parentFile?.name == 'build')
+    }
+}
+
 // Until this project is always being formatted with spotless, we need to
 // guard against `spotless()` not existing.
 try {

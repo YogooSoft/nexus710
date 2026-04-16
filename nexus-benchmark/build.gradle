@@ -13,4 +13,5 @@ group = 'io.nexus710'
 
 dependencies {
     implementation project(':server')
+    implementation project(':test:framework')
 }

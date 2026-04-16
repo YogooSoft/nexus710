@@ -379,7 +379,7 @@ public class SimpleBlocksIT extends ESIntegTestCase {
 
         final APIBlock block = randomAddableBlock();
 
-        int nbDocs = 0;
+        long nbDocs = 0;
 
         try {
             try (BackgroundIndexer indexer = new BackgroundIndexer(indexName, "_doc", client(), 1000)) {
