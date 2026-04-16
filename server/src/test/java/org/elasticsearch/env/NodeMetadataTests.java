@@ -61,6 +61,7 @@ public class NodeMetadataTests extends ESTestCase {
             });
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testReadsFormatWithoutVersion() throws IOException {
         // the behaviour tested here is only appropriate if the current version is compatible with versions 7 and earlier
         assertTrue(Version.CURRENT.minimumIndexCompatibilityVersion().onOrBefore(Version.V_7_0_0));

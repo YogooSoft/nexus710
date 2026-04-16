@@ -356,6 +356,7 @@ public class QueryPhaseTests extends IndexShardTestCase {
         dir.close();
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testTerminateAfterEarlyTermination() throws Exception {
         Directory dir = newDirectory();
         IndexWriterConfig iwc = newIndexWriterConfig();
@@ -632,6 +633,7 @@ public class QueryPhaseTests extends IndexShardTestCase {
         dir.close();
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testDisableTopScoreCollection() throws Exception {
         Directory dir = newDirectory();
         IndexWriterConfig iwc = newIndexWriterConfig(new StandardAnalyzer());

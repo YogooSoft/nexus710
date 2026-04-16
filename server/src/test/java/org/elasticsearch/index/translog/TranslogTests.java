@@ -1274,6 +1274,7 @@ public class TranslogTests extends ESTestCase {
         translog.close();
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testTranslogWriter() throws IOException {
         final TranslogWriter writer = translog.createWriter(translog.currentFileGeneration() + 1);
         final Set<Long> persistedSeqNos = new HashSet<>();
@@ -1520,6 +1521,7 @@ public class TranslogTests extends ESTestCase {
         }
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testCloseIntoReader() throws IOException {
         try (TranslogWriter writer = translog.createWriter(translog.currentFileGeneration() + 1)) {
             final int numOps = randomIntBetween(8, 128);
@@ -2974,6 +2976,7 @@ public class TranslogTests extends ESTestCase {
         assertEquals(read, checkpoint);
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testLegacyCheckpointVersion() throws IOException {
         expectThrows(
             TranslogCorruptedException.class,

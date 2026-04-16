@@ -22,14 +22,30 @@ package org.elasticsearch.gradle.test;
 import com.carrotsearch.randomizedtesting.ThreadFilter;
 
 /**
- * Filter out threads controlled by gradle that may be created during unit tests.
+ * Filter out threads controlled by Gradle or the JDK that may be created during unit tests.
  *
- * Currently this includes pooled threads for Exec as well as file system event watcher threads.
+ * This includes pooled threads for Exec, file system watcher threads, and auxiliary background
+ * threads observed from recent Gradle/JDK combinations on macOS.
  */
 public class GradleThreadsFilter implements ThreadFilter {
 
     @Override
     public boolean reject(Thread t) {
-        return t.getName().startsWith("Exec process") || t.getName().startsWith("File watcher consumer");
+        String threadName = t.getName();
+        if (threadName.startsWith("Exec process") || threadName.startsWith("File watcher consumer")) {
+            return true;
+        }
+        if (threadName.startsWith("sshd-SshClient")) {
+            return true;
+        }
+        if ("Memory manager".equals(threadName)) {
+            return true;
+        }
+        for (StackTraceElement element : t.getStackTrace()) {
+            if ("sun.nio.ch.KQueuePort$EventHandlerTask".equals(element.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

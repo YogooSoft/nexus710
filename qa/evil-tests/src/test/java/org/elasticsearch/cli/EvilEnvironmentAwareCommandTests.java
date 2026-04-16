@@ -20,20 +20,32 @@
 package org.elasticsearch.cli;
 
 import joptsimple.OptionSet;
-import org.apache.lucene.util.TestRuleRestoreSystemProperties;
 import org.elasticsearch.common.SuppressForbidden;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.test.ESTestCase;
-import org.junit.Rule;
-import org.junit.rules.TestRule;
+import org.junit.After;
+import org.junit.Before;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasToString;
 
 public class EvilEnvironmentAwareCommandTests extends ESTestCase {
 
-    @Rule
-    public TestRule restoreSystemProperties = new TestRuleRestoreSystemProperties("es.path.conf");
+    private String esPathConf;
+
+    @Before
+    public void captureEsPathConf() {
+        esPathConf = System.getProperty("es.path.conf");
+    }
+
+    @After
+    public void restoreEsPathConf() {
+        if (esPathConf == null) {
+            System.clearProperty("es.path.conf");
+        } else {
+            System.setProperty("es.path.conf", esPathConf);
+        }
+    }
 
     public void testEsPathConfNotSet() throws Exception {
         clearEsPathConf();
@@ -51,10 +63,11 @@ public class EvilEnvironmentAwareCommandTests extends ESTestCase {
 
         }
 
-        final TestEnvironmentAwareCommand command = new TestEnvironmentAwareCommand("test");
-        final UserException e =
-                expectThrows(UserException.class, () -> command.mainWithoutErrorHandling(new String[0], new MockTerminal()));
-        assertThat(e, hasToString(containsString("the system property [es.path.conf] must be set")));
+        try (TestEnvironmentAwareCommand command = new TestEnvironmentAwareCommand("test")) {
+            final UserException e =
+                    expectThrows(UserException.class, () -> command.mainWithoutErrorHandling(new String[0], new MockTerminal()));
+            assertThat(e, hasToString(containsString("the system property [es.path.conf] must be set")));
+        }
     }
 
     @SuppressForbidden(reason =  "clears system property es.path.conf as part of test setup")

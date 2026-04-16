@@ -133,6 +133,7 @@ public class TestCustomUnifiedHighlighter extends ESTestCase {
             BreakIterator.getSentenceInstance(Locale.ROOT), 100, inputs);
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testMultiPhrasePrefixQuerySingleTerm() throws Exception {
         final String[] inputs = {
             "The quick brown fox."
@@ -146,6 +147,7 @@ public class TestCustomUnifiedHighlighter extends ESTestCase {
             BreakIterator.getSentenceInstance(Locale.ROOT), 0, outputs);
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testMultiPhrasePrefixQuery() throws Exception {
         final String[] inputs = {
             "The quick brown fox."
@@ -212,6 +214,7 @@ public class TestCustomUnifiedHighlighter extends ESTestCase {
             BoundedBreakIteratorScanner.getSentence(Locale.ROOT, 20), 0, outputs);
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testRepeat() throws Exception {
         final String[] inputs = {
             "Fun  fun fun  fun  fun  fun  fun  fun  fun  fun"

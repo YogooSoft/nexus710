@@ -156,7 +156,9 @@ final class StoreRecovery {
             boolean hasNested) throws IOException {
 
         assert sources.length > 0;
-        final int luceneIndexCreatedVersionMajor = Lucene.readSegmentInfos(sources[0]).getIndexCreatedVersionMajor();
+        final int luceneIndexCreatedVersionMajor = Math.max(
+            Lucene.readSegmentInfos(sources[0]).getIndexCreatedVersionMajor(),
+            org.apache.lucene.util.Version.LATEST.major - 1);
 
         final Directory hardLinkOrCopyTarget = new org.apache.lucene.misc.store.HardlinkCopyDirectoryWrapper(target);
 

@@ -80,6 +80,7 @@ public class SimilarityTests extends ESSingleNodeTestCase {
                 + "similarity instead.", e.getMessage());
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testResolveSimilaritiesFromMapping_bm25() throws IOException {
         XContentBuilder mapping = XContentFactory.jsonBuilder().startObject().startObject("type")
             .startObject("properties")

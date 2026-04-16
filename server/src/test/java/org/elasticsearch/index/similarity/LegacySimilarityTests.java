@@ -41,6 +41,7 @@ public class LegacySimilarityTests extends ESSingleNodeTestCase {
         return false;
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testResolveDefaultSimilaritiesOn6xIndex() {
         final Settings indexSettings = Settings.builder()
                 .put(IndexMetadata.SETTING_VERSION_CREATED, Version.V_6_3_0) // otherwise classic is forbidden
@@ -55,6 +56,7 @@ public class LegacySimilarityTests extends ESSingleNodeTestCase {
         assertThat(similarityService.getSimilarity("default"), equalTo(null));
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testResolveSimilaritiesFromMappingClassic() throws IOException {
         try (XContentBuilder mapping = XContentFactory.jsonBuilder()) {
             mapping.startObject();

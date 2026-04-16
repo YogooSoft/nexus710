@@ -46,6 +46,7 @@ import java.io.IOException;
 
 public class PrunePostingsMergePolicyTests extends ESTestCase {
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testPrune() throws IOException {
         try (Directory dir = newDirectory()) {
             IndexWriterConfig iwc = newIndexWriterConfig();

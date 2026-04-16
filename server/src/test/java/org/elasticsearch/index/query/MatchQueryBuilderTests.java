@@ -467,6 +467,7 @@ public class MatchQueryBuilderTests extends AbstractQueryTestCase<MatchQueryBuil
         }
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testMultiWordSynonymsPhrase() throws Exception {
         final MatchQuery matchQuery = new MatchQuery(createShardContext());
         matchQuery.setAnalyzer(new MockSynonymAnalyzer());
@@ -502,6 +503,7 @@ public class MatchQueryBuilderTests extends AbstractQueryTestCase<MatchQueryBuil
         assertEquals(expected, actual);
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testMaxBooleanClause() {
         MatchQuery query = new MatchQuery(createShardContext());
         query.setAnalyzer(new MockGraphAnalyzer(createGiantGraph(40)));

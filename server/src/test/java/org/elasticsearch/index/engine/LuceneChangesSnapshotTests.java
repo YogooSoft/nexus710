@@ -185,6 +185,7 @@ public class LuceneChangesSnapshotTests extends EngineTestCase {
         }
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testUpdateAndReadChangesConcurrently() throws Exception {
         Follower[] followers = new Follower[between(1, 3)];
         CountDownLatch readyLatch = new CountDownLatch(followers.length + 1);

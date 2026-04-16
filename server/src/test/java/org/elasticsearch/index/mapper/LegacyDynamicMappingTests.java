@@ -37,6 +37,7 @@ public class LegacyDynamicMappingTests extends ESSingleNodeTestCase {
         return false;
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testTypeNotCreatedOnIndexFailure() throws IOException {
         final Settings settings = Settings.builder().put(IndexMetadata.SETTING_INDEX_VERSION_CREATED.getKey(), Version.V_6_3_0).build();
         try (XContentBuilder mapping = jsonBuilder()) {

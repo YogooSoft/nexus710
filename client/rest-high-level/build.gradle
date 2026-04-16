@@ -53,6 +53,74 @@ dependencies {
   // (In order to serialize a server side class to a client side class or the other way around)
 }
 
+// Exclude test sources that depend on x-pack modules not available in this OSS build
+sourceSets {
+  test {
+    java {
+      exclude '**/documentation/SecurityDocumentationIT.java'
+      exclude '**/indices/GetDataStreamResponseTests.java'
+      exclude '**/indices/DataStreamsStatsResponseTests.java'
+      exclude '**/indices/ReloadAnalyzersResponseTests.java'
+      exclude '**/watcher/hlrc/ExecuteWatchResponseTests.java'
+      exclude '**/watcher/hlrc/PutWatchResponseTests.java'
+      exclude '**/watcher/hlrc/DeleteWatchResponseTests.java'
+      exclude '**/watcher/GetWatchResponseTests.java'
+      exclude '**/license/StartBasicResponseTests.java'
+      exclude '**/license/GetBasicStatusResponseTests.java'
+      exclude '**/license/GetTrialStatusResponseTests.java'
+      exclude '**/license/PutLicenseResponseTests.java'
+      exclude '**/XPackInfoResponseTests.java'
+      exclude '**/security/hlrc/HasPrivilegesResponseTests.java'
+      exclude '**/security/DelegatePkiAuthenticationResponseTests.java'
+      exclude '**/security/DelegatePkiAuthenticationRequestTests.java'
+      exclude '**/ml/MlInfoActionResponseTests.java'
+      exclude '**/ml/PutCalendarActionResponseTests.java'
+      exclude '**/ml/inference/trainedmodel/langident/LangIdentNeuralNetworkTests.java'
+      exclude '**/enrich/ExecutePolicyResponseTests.java'
+      exclude '**/enrich/StatsResponseTests.java'
+      exclude '**/enrich/GetPolicyResponseTests.java'
+      exclude '**/enrich/PutPolicyRequestTests.java'
+      exclude '**/EnrichRequestConvertersTests.java'
+      exclude '**/asyncsearch/AsyncSearchResponseTests.java'
+      exclude '**/graph/GraphExploreResponseTests.java'
+      exclude '**/eql/EqlSearchResponseTests.java'
+      exclude '**/eql/EqlSearchRequestTests.java'
+      exclude '**/ccr/CcrStatsResponseTests.java'
+      exclude '**/ccr/ResumeFollowRequestTests.java'
+      exclude '**/ccr/PutFollowResponseTests.java'
+      exclude '**/ccr/PutFollowRequestTests.java'
+      exclude '**/ccr/GetAutoFollowPatternResponseTests.java'
+      exclude '**/ccr/FollowInfoResponseTests.java'
+      exclude '**/ccr/FollowStatsResponseTests.java'
+      exclude '**/ccr/PutAutoFollowPatternRequestTests.java'
+      exclude '**/transform/hlrc/GetTransformStatsResponseTests.java'
+      exclude '**/transform/hlrc/PreviewTransformResponseTests.java'
+      exclude '**/transform/transforms/hlrc/TransformProgressTests.java'
+      exclude '**/transform/transforms/hlrc/TransformStatsTests.java'
+      exclude '**/transform/transforms/hlrc/TransformIndexerStatsTests.java'
+      exclude '**/transform/transforms/hlrc/TransformCheckpointingInfoTests.java'
+      exclude '**/transform/transforms/hlrc/TransformIndexerPositionTests.java'
+      exclude '**/transform/transforms/hlrc/TimeSyncConfigTests.java'
+      exclude '**/transform/transforms/hlrc/TransformCheckpointStatsTests.java'
+      exclude '**/transform/transforms/hlrc/SettingsConfigTests.java'
+      exclude '**/transform/transforms/SettingsConfigTests.java'
+      exclude '**/transform/transforms/TransformConfigTests.java'
+      exclude '**/transform/transforms/TransformConfigUpdateTests.java'
+      exclude '**/transform/PutTransformRequestTests.java'
+      exclude '**/transform/GetTransformResponseTests.java'
+      exclude '**/transform/PreviewTransformRequestTests.java'
+      exclude '**/transform/UpdateTransformRequestTests.java'
+      exclude '**/transform/UpdateDataFrameTransformResponseTests.java'
+      exclude '**/TransformRequestConvertersTests.java'
+      exclude '**/transform/transforms/pivot/hlrc/GeoTileGroupSourceTests.java'
+      exclude '**/transform/transforms/pivot/hlrc/TermsGroupSourceTests.java'
+      exclude '**/transform/transforms/pivot/hlrc/HistogramGroupSourceTests.java'
+      exclude '**/transform/transforms/pivot/hlrc/DateHistogramGroupSourceTests.java'
+      exclude '**/SearchIT.java'
+    }
+  }
+}
+
 tasks.named('forbiddenApisMain').configure {
   // core does not depend on the httpclient for compile so we add the signatures here. We don't add them for test as they are already
   // specified

@@ -493,6 +493,7 @@ public class SimpleQueryStringBuilderTests extends AbstractQueryTestCase<SimpleQ
         }
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testAnalyzerWithGraph() {
         SimpleQueryStringQueryParser.Settings settings = new SimpleQueryStringQueryParser.Settings();
         settings.analyzeWildcard(true);

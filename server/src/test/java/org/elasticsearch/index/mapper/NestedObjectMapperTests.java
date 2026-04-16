@@ -767,6 +767,7 @@ public class NestedObjectMapperTests extends ESSingleNodeTestCase {
         return false;
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testReorderParentBWC() throws IOException {
         String mapping = Strings.toString(XContentFactory.jsonBuilder().startObject().startObject("type").startObject("properties")
             .startObject("nested1").field("type", "nested").endObject()

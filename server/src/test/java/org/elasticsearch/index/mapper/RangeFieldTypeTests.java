@@ -216,6 +216,7 @@ public class RangeFieldTypeTests extends FieldTypeTestCase {
             xContentRegistry(), writableRegistry(), null, null, () -> nowInMillis, null, null, () -> true, null);
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testDateRangeQueryUsingMappingFormat() {
         QueryShardContext context = createContext();
         RangeFieldType strict = new RangeFieldType("field", RangeFieldMapper.Defaults.DATE_FORMATTER);

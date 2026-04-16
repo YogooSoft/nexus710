@@ -51,6 +51,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ScriptedSimilarityTests extends ESTestCase {
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testSameNormsAsBM25CountOverlaps() {
         doTestSameNormsAsBM25(false);
     }

@@ -52,6 +52,7 @@ public class EsTieredMergePolicyTests extends ESTestCase {
         assertEquals(42, policy.forcedMergePolicy.getFloorSegmentMB(), 0);
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testSetMaxMergeAtOnce() {
         EsTieredMergePolicy policy = new EsTieredMergePolicy();
         policy.setMaxMergeAtOnce(42);

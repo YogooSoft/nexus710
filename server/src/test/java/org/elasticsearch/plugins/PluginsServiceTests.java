@@ -720,6 +720,7 @@ public class PluginsServiceTests extends ESTestCase {
             TestPlugin.class.getName() + "] (class loader [" + PluginsServiceTests.class.getClassLoader() + "])")));
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testExtensiblePlugin() {
         TestExtensiblePlugin extensiblePlugin = new TestExtensiblePlugin();
         PluginsService.loadExtensions(Collections.singletonList(

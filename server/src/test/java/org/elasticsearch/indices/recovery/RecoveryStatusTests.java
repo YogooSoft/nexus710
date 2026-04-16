@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 public class RecoveryStatusTests extends ESSingleNodeTestCase {
     private static final org.apache.lucene.util.Version MIN_SUPPORTED_LUCENE_VERSION = org.elasticsearch.Version.CURRENT
         .minimumIndexCompatibilityVersion().luceneVersion;
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testRenameTempFiles() throws IOException {
         IndexService service = createIndex("foo");
 

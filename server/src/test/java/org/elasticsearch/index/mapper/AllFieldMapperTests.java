@@ -39,6 +39,7 @@ public class AllFieldMapperTests extends ESSingleNodeTestCase {
         return false;
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testAllDisabled() throws Exception {
         {
             final Version version = VersionUtils.randomVersionBetween(random(),

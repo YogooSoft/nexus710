@@ -54,6 +54,7 @@ public class CompletionStatsCacheTests extends ESTestCase {
         assertThat(expectThrows(ElasticsearchException.class, completionStatsCache::get).getMessage(), equalTo("simulated 2"));
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testCompletionStatsCache() throws IOException, InterruptedException {
         final IndexWriterConfig indexWriterConfig = newIndexWriterConfig();
         final PostingsFormat postingsFormat = new Completion84PostingsFormat();

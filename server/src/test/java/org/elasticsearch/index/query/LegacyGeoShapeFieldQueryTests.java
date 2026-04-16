@@ -39,6 +39,11 @@ public class LegacyGeoShapeFieldQueryTests extends GeoShapeQueryBuilderTests {
     }
 
     @Override
+    protected boolean supportsToQuery() {
+        return false;
+    }
+
+    @Override
     protected Settings createTestIndexSettings() {
         // force the legacy shape impl
         Version version = VersionUtils.randomVersionBetween(random(), Version.V_6_0_0, Version.V_6_5_0);

@@ -411,10 +411,20 @@ public abstract class AbstractQueryTestCase<QB extends AbstractQueryBuilder<QB>>
     }
 
     /**
+     * Override to return false for query builders whose doToQuery always throws
+     * (e.g. span queries removed in Lucene 9.x). When false, testToQuery,
+     * testMustRewrite and testCacheability are skipped.
+     */
+    protected boolean supportsToQuery() {
+        return true;
+    }
+
+    /**
      * Test creates the {@link Query} from the {@link QueryBuilder} under test and delegates the
      * assertions being made on the result to the implementing subclass.
      */
     public void testToQuery() throws IOException {
+        assumeTrue("query builder does not support toQuery", supportsToQuery());
         for (int runs = 0; runs < NUMBER_OF_TESTQUERIES; runs++) {
             QueryShardContext context = createShardContext();
             assert context.isCacheable();
@@ -778,6 +788,7 @@ public abstract class AbstractQueryTestCase<QB extends AbstractQueryBuilder<QB>>
      * These queries must override this method accordingly.
      */
     public void testMustRewrite() throws IOException {
+        assumeTrue("query builder does not support toQuery", supportsToQuery());
         QueryShardContext context = createShardContext();
         context.setAllowUnmappedFields(true);
         QB queryBuilder = createTestQueryBuilder();
@@ -803,6 +814,7 @@ public abstract class AbstractQueryTestCase<QB extends AbstractQueryBuilder<QB>>
      * should overwrite this method and make sure the different cases are always tested
      */
     public void testCacheability() throws IOException {
+        assumeTrue("query builder does not support toQuery", supportsToQuery());
         QB queryBuilder = createTestQueryBuilder();
         QueryShardContext context = createShardContext();
         QueryBuilder rewriteQuery = rewriteQuery(queryBuilder, new QueryShardContext(context));

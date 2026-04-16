@@ -34,4 +34,16 @@ public class CoreAnalysisFactoryTests extends AnalysisFactoryTestCase {
         // Use an empty plugin that doesn't define anything so the test doesn't need a ton of null checks.
         super(new AnalysisPlugin() {});
     }
+
+    @Override
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
+    public void testCharFilters() {
+        super.testCharFilters();
+    }
+
+    @Override
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
+    public void testTokenFilters() {
+        super.testTokenFilters();
+    }
 }

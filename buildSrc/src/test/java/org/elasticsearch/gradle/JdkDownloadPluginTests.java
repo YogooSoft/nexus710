@@ -23,17 +23,10 @@ import org.elasticsearch.gradle.test.GradleUnitTestCase;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
-import org.junit.BeforeClass;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 
 public class JdkDownloadPluginTests extends GradleUnitTestCase {
-    private static Project rootProject;
-
-    @BeforeClass
-    public static void setupRoot() {
-        rootProject = ProjectBuilder.builder().build();
-    }
 
     public void testMissingVendor() {
         assertJdkError(createProject(), "testjdk", null, "11.0.2+33", "linux", "x64", "vendor not specified for jdk [testjdk]");
@@ -47,7 +40,7 @@ public class JdkDownloadPluginTests extends GradleUnitTestCase {
             "11.0.2+33",
             "linux",
             "x64",
-            "unknown vendor [unknown] for jdk [testjdk], must be one of [adoptopenjdk, openjdk]"
+            "unknown vendor [unknown] for jdk [testjdk], must be one of [adoptopenjdk, openjdk, adoptium]"
         );
     }
 
@@ -135,6 +128,7 @@ public class JdkDownloadPluginTests extends GradleUnitTestCase {
     }
 
     private Project createProject() {
+        Project rootProject = ProjectBuilder.builder().build();
         Project project = ProjectBuilder.builder().withParent(rootProject).build();
         project.getPlugins().apply("elasticsearch.jdk-download");
         return project;

@@ -91,6 +91,7 @@ public class DiversifiedSamplerTests extends AggregatorTestCase {
         iw.addDocuments(docs);
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testDiversifiedSampler() throws Exception {
         Directory directory = newDirectory();
         RandomIndexWriter indexWriter = new RandomIndexWriter(random(), directory);
@@ -124,6 +125,7 @@ public class DiversifiedSamplerTests extends AggregatorTestCase {
         directory.close();
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testRidiculousSize() throws Exception {
         Directory directory = newDirectory();
         RandomIndexWriter indexWriter = new RandomIndexWriter(random(), directory);

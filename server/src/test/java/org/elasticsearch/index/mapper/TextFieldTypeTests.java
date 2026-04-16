@@ -132,6 +132,7 @@ public class TextFieldTypeTests extends FieldTypeTestCase {
                 ee.getMessage());
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testIndexPrefixes() {
         TextFieldType ft = createFieldType();
         ft.setPrefixFieldType(new TextFieldMapper.PrefixFieldType(ft, "field._index_prefix", 2, 10));

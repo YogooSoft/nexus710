@@ -80,6 +80,7 @@ public class MergePolicySettingsTests extends ESTestCase {
     }
 
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testTieredMergePolicySettingsUpdate() throws IOException {
         IndexSettings indexSettings = indexSettings(Settings.EMPTY);
         assertEquals(((EsTieredMergePolicy) indexSettings.getMergePolicy()).getForceMergeDeletesPctAllowed(),

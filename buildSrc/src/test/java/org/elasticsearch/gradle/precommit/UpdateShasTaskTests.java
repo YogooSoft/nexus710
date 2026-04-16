@@ -23,7 +23,6 @@ import org.elasticsearch.gradle.test.GradleUnitTestCase;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
-import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.TaskProvider;
@@ -35,6 +34,7 @@ import org.junit.rules.ExpectedException;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -45,6 +45,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 
 public class UpdateShasTaskTests extends GradleUnitTestCase {
 
+    private static final String DEP_NAME = "dummy";
+    private static final String DEP_JAR = DEP_NAME + "-1.0.jar";
+
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
@@ -52,14 +55,16 @@ public class UpdateShasTaskTests extends GradleUnitTestCase {
 
     private Project project;
 
-    private Dependency dependency;
+    private File dummyJar;
 
     @Before
     public void prepare() throws IOException {
         project = createProject();
-        task = createUpdateShasTask(project);
-        dependency = project.getDependencies().localGroovy();
 
+        dummyJar = new File(project.getProjectDir(), DEP_JAR);
+        Files.write(dummyJar.toPath(), "fake jar content".getBytes(StandardCharsets.UTF_8));
+
+        task = createUpdateShasTask(project);
     }
 
     @Test
@@ -73,27 +78,26 @@ public class UpdateShasTaskTests extends GradleUnitTestCase {
 
     @Test
     public void whenDependencyExistsButShaNotThenShouldCreateNewShaFile() throws IOException, NoSuchAlgorithmException {
-        project.getDependencies().add("compile", dependency);
+        task.getParentTask().setDependencies(project.files(dummyJar));
 
         getLicensesDir(project).mkdir();
         task.updateShas();
 
-        Path groovySha = Files.list(getLicensesDir(project).toPath()).findFirst().get();
+        Path sha = Files.list(getLicensesDir(project).toPath()).findFirst().get();
 
-        assertTrue(groovySha.toFile().getName().startsWith("groovy-all"));
+        assertTrue(sha.toFile().getName().startsWith(DEP_NAME));
     }
 
     @Test
     public void whenDependencyAndWrongShaExistsThenShouldNotOverwriteShaFile() throws IOException, NoSuchAlgorithmException {
-        project.getDependencies().add("compile", dependency);
+        task.getParentTask().setDependencies(project.files(dummyJar));
 
-        File groovyJar = task.getParentTask().getDependencies().getFiles().iterator().next();
-        String groovyShaName = groovyJar.getName() + ".sha1";
+        String shaName = DEP_JAR + ".sha1";
 
-        File groovySha = createFileIn(getLicensesDir(project), groovyShaName, "content");
+        File sha = createFileIn(getLicensesDir(project), shaName, "content");
         task.updateShas();
 
-        assertThat(FileUtils.readFileToString(groovySha), equalTo("content"));
+        assertThat(FileUtils.readFileToString(sha), equalTo("content"));
     }
 
     @Test
@@ -125,7 +129,7 @@ public class UpdateShasTaskTests extends GradleUnitTestCase {
         Path path = parent.toPath().resolve(name);
         File file = path.toFile();
 
-        Files.write(path, content.getBytes(), StandardOpenOption.CREATE);
+        Files.write(path, content.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
 
         return file;
     }
@@ -142,14 +146,10 @@ public class UpdateShasTaskTests extends GradleUnitTestCase {
             .register("dependencyLicenses", DependencyLicensesTask.class, new Action<DependencyLicensesTask>() {
                 @Override
                 public void execute(DependencyLicensesTask dependencyLicensesTask) {
-                    dependencyLicensesTask.setDependencies(getDependencies(project));
+                    dependencyLicensesTask.setDependencies(project.files());
                 }
             });
 
         return task;
-    }
-
-    private FileCollection getDependencies(Project project) {
-        return project.getConfigurations().getByName("compile");
     }
 }

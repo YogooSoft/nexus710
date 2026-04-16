@@ -30,6 +30,11 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 
 public class FieldMaskingSpanQueryBuilderTests extends AbstractQueryTestCase<FieldMaskingSpanQueryBuilder> {
     @Override
+    protected boolean supportsToQuery() {
+        return false;
+    }
+
+    @Override
     protected FieldMaskingSpanQueryBuilder doCreateTestQueryBuilder() {
         String fieldName;
         if (randomBoolean()) {

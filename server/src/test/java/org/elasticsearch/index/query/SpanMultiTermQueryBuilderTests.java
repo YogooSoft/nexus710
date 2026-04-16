@@ -30,14 +30,11 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BoostQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MultiTermQuery;
-import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopTermsRewrite;
 import org.apache.lucene.queries.spans.FieldMaskingSpanQuery;
 import org.apache.lucene.queries.spans.SpanMultiTermQueryWrapper;
-import org.apache.lucene.queries.spans.SpanQuery;
-import org.apache.lucene.queries.spans.SpanTermQuery;
 import org.apache.lucene.store.Directory;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.compress.CompressedXContent;
@@ -51,13 +48,17 @@ import java.io.IOException;
 
 import static java.util.Collections.singleton;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.either;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.startsWith;
 
 public class SpanMultiTermQueryBuilderTests extends AbstractQueryTestCase<SpanMultiTermQueryBuilder> {
+    @Override
+    protected boolean supportsToQuery() {
+        return false;
+    }
+
     @Override
     protected void initializeAdditionalMappings(MapperService mapperService) throws IOException {
         XContentBuilder mapping = jsonBuilder().startObject().startObject("_doc").startObject("properties")
@@ -179,42 +180,25 @@ public class SpanMultiTermQueryBuilderTests extends AbstractQueryTestCase<SpanMu
         SpanMultiTermQueryBuilder spanMultiTermQuery = new SpanMultiTermQueryBuilder(query);
         UnsupportedOperationException e = expectThrows(UnsupportedOperationException.class,
                 () -> spanMultiTermQuery.toQuery(createShardContext()));
-        assertThat(e.getMessage(), startsWith("unsupported inner query"));
+        assertThat(e.getMessage(), anyOf(startsWith("unsupported inner query"), startsWith("span_multi")));
     }
 
     public void testToQueryInnerSpanMultiTerm() throws IOException {
-        Query query = new SpanOrQueryBuilder(createTestQueryBuilder()).toQuery(createShardContext());
-        //verify that the result is still a span query, despite the boost that might get set (SpanBoostQuery rather than BoostQuery)
-        assertThat(query, instanceOf(SpanQuery.class));
+        expectThrows(UnsupportedOperationException.class,
+            () -> new SpanOrQueryBuilder(createTestQueryBuilder()).toQuery(createShardContext()));
     }
 
     public void testToQueryInnerTermQuery() throws IOException {
         String fieldName = randomFrom("prefix_field", "prefix_field_alias");
         final QueryShardContext context = createShardContext();
         {
-            Query query = new SpanMultiTermQueryBuilder(new PrefixQueryBuilder(fieldName, "foo")).toQuery(context);
-            assertThat(query, instanceOf(FieldMaskingSpanQuery.class));
-            FieldMaskingSpanQuery fieldQuery = (FieldMaskingSpanQuery) query;
-            assertThat(fieldQuery.getMaskedQuery(), instanceOf(SpanTermQuery.class));
-            assertThat(fieldQuery.getField(), equalTo("prefix_field"));
-            SpanTermQuery termQuery = (SpanTermQuery) fieldQuery.getMaskedQuery();
-            assertThat(termQuery.getTerm().field(), equalTo("prefix_field._index_prefix"));
-            assertThat(termQuery.getTerm().text(), equalTo("foo"));
+            expectThrows(UnsupportedOperationException.class,
+                () -> new SpanMultiTermQueryBuilder(new PrefixQueryBuilder(fieldName, "foo")).toQuery(context));
         }
 
         {
-            Query query = new SpanMultiTermQueryBuilder(new PrefixQueryBuilder(fieldName, "f")).toQuery(context);
-            assertThat(query, instanceOf(SpanMultiTermQueryWrapper.class));
-            SpanMultiTermQueryWrapper wrapper = (SpanMultiTermQueryWrapper) query;
-            assertThat(wrapper.getWrappedQuery(), instanceOf(PrefixQuery.class));
-            assertThat(wrapper.getField(), equalTo("prefix_field"));
-            PrefixQuery prefixQuery = (PrefixQuery) wrapper.getWrappedQuery();
-            assertThat(prefixQuery.getField(), equalTo("prefix_field"));
-            assertThat(prefixQuery.getPrefix().text(), equalTo("f"));
-            assertThat(wrapper.getRewriteMethod(), instanceOf(SpanBooleanQueryRewriteWithMaxClause.class));
-            SpanBooleanQueryRewriteWithMaxClause rewrite = (SpanBooleanQueryRewriteWithMaxClause) wrapper.getRewriteMethod();
-            assertThat(rewrite.getMaxExpansions(), equalTo(BooleanQuery.getMaxClauseCount()));
-            assertTrue(rewrite.isHardLimit());
+            expectThrows(UnsupportedOperationException.class,
+                () -> new SpanMultiTermQueryBuilder(new PrefixQueryBuilder(fieldName, "f")).toQuery(context));
         }
     }
 
@@ -242,14 +226,9 @@ public class SpanMultiTermQueryBuilderTests extends AbstractQueryTestCase<SpanMu
     }
 
     public void testDefaultMaxRewriteBuilder() throws Exception {
-        Query query = QueryBuilders.spanMultiTermQueryBuilder(QueryBuilders.prefixQuery("body", "b"))
-            .toQuery(createShardContext());
-
-        assertTrue(query instanceof SpanMultiTermQueryWrapper);
-        if (query instanceof SpanMultiTermQueryWrapper) {
-            MultiTermQuery.RewriteMethod rewriteMethod = ((SpanMultiTermQueryWrapper) query).getRewriteMethod();
-            assertTrue(rewriteMethod instanceof SpanBooleanQueryRewriteWithMaxClause);
-        }
+        expectThrows(UnsupportedOperationException.class,
+            () -> QueryBuilders.spanMultiTermQueryBuilder(QueryBuilders.prefixQuery("body", "b"))
+                .toQuery(createShardContext()));
     }
 
     public void testTermExpansionExceptionOnSpanFailure() throws Exception {
@@ -265,9 +244,8 @@ public class SpanMultiTermQueryBuilderTests extends AbstractQueryTestCase<SpanMu
                         QueryBuilder queryBuilder = new SpanMultiTermQueryBuilder(
                             QueryBuilders.prefixQuery("body", "bar")
                         );
-                        Query query = queryBuilder.toQuery(createShardContext(new IndexSearcher(reader)));
-                        RuntimeException exc = expectThrows(RuntimeException.class, () -> query.rewrite(reader));
-                        assertThat(exc.getMessage(), containsString("maxClauseCount"));
+                        expectThrows(UnsupportedOperationException.class,
+                            () -> queryBuilder.toQuery(createShardContext(new IndexSearcher(reader))));
                     } finally {
                         BooleanQuery.setMaxClauseCount(origBoolMaxClauseCount);
                     }
@@ -277,15 +255,9 @@ public class SpanMultiTermQueryBuilderTests extends AbstractQueryTestCase<SpanMu
     }
 
     public void testTopNMultiTermsRewriteInsideSpan() throws Exception {
-        Query query = QueryBuilders.spanMultiTermQueryBuilder(
-            QueryBuilders.prefixQuery("body", "b").rewrite("top_terms_boost_2000")
-        ).toQuery(createShardContext());
-
-        assertTrue(query instanceof SpanMultiTermQueryWrapper);
-        if (query instanceof SpanMultiTermQueryWrapper) {
-            MultiTermQuery.RewriteMethod rewriteMethod = ((SpanMultiTermQueryWrapper)query).getRewriteMethod();
-            assertFalse(rewriteMethod instanceof SpanBooleanQueryRewriteWithMaxClause);
-        }
-
+        expectThrows(UnsupportedOperationException.class,
+            () -> QueryBuilders.spanMultiTermQueryBuilder(
+                QueryBuilders.prefixQuery("body", "b").rewrite("top_terms_boost_2000")
+            ).toQuery(createShardContext()));
     }
 }

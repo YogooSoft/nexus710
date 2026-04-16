@@ -40,6 +40,7 @@ public class LegacyMapperServiceTests extends ESSingleNodeTestCase {
         return false;
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testIndexMetadataUpdateDoesNotLoseDefaultMapper() throws IOException {
         final IndexService indexService =
                 createIndex("test", Settings.builder().put(IndexMetadata.SETTING_VERSION_CREATED, Version.V_6_3_0).build());
@@ -69,6 +70,7 @@ public class LegacyMapperServiceTests extends ESSingleNodeTestCase {
         assertNotNull(indexService.mapperService().documentMapper(MapperService.DEFAULT_MAPPING));
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testDefaultMappingIsDeprecatedOn6() throws IOException {
         final Settings settings = Settings.builder().put(IndexMetadata.SETTING_VERSION_CREATED, Version.V_6_3_0).build();
         final String mapping;

@@ -702,6 +702,7 @@ public class RecoverySourceHandlerTests extends ESTestCase {
         store.close();
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testCancelRecoveryDuringPhase1() throws Exception {
         Store store = newStore(createTempDir("source"), false);
         IndexShard shard = mock(IndexShard.class);

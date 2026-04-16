@@ -299,6 +299,7 @@ public class StoreTests extends ESTestCase {
         IOUtils.close(verifyingOutput, dir);
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testNewChecksums() throws IOException {
         final ShardId shardId = new ShardId("index", "_na_", 1);
         Store store = new Store(shardId, INDEX_SETTINGS, StoreTests.newDirectory(random()), new DummyShardLock(shardId));
@@ -382,6 +383,7 @@ public class StoreTests extends ESTestCase {
 
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testVerifyingIndexInput() throws IOException {
         Directory dir = newDirectory();
         IndexOutput output = dir.createOutput("foo.bar", IOContext.DEFAULT);

@@ -195,6 +195,21 @@ public abstract class AnalysisFactoryTestCase extends ESTestCase {
         // LUCENE-8936
         .put("spanishminimalstem", Void.class)
         .put("delimitedboost", Void.class)
+        // Lucene 9.12 additions
+        .put("dropifflagged", Void.class)
+        .put("norwegiannormalization", Void.class)
+        .put("patterntyping", Void.class)
+        .put("persianstem", Void.class)
+        .put("spanishpluralstem", Void.class)
+        .put("swedishminimalstem", Void.class)
+        .put("telugunormalization", Void.class)
+        .put("telugustem", Void.class)
+        .put("word2vecsynonym", Void.class)
+        .put("daitchmokotoffsoundex", Void.class)
+        // Lucene 9.12 kuromoji additions
+        .put("japanesecompletion", Void.class)
+        .put("japanesehiraganauppercase", Void.class)
+        .put("japanesekatakanauppercase", Void.class)
         .immutableMap();
 
     static final Map<String,Class<?>> KNOWN_CHARFILTERS = new MapBuilder<String,Class<?>>()
@@ -206,6 +221,8 @@ public abstract class AnalysisFactoryTestCase extends ESTestCase {
         // TODO: these charfilters are not yet exposed: useful?
         // handling of zwnj for persian
         .put("persian",        Void.class)
+        // Lucene 9.12: CJK width normalization (fullwidth/halfwidth)
+        .put("cjkwidth",       Void.class)
         .immutableMap();
 
     /**

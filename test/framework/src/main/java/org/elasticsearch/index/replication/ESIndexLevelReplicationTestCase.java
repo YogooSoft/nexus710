@@ -20,6 +20,8 @@
 package org.elasticsearch.index.replication;
 
 import org.apache.lucene.store.AlreadyClosedException;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.elasticsearch.Version;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.DocWriteRequest;
@@ -81,6 +83,7 @@ import org.elasticsearch.index.shard.IndexShardTestCase;
 import org.elasticsearch.index.shard.PrimaryReplicaSyncer;
 import org.elasticsearch.index.shard.ShardId;
 import org.elasticsearch.index.shard.ShardPath;
+import org.elasticsearch.index.store.Store;
 import org.elasticsearch.index.translog.Translog;
 import org.elasticsearch.indices.recovery.RecoveryState;
 import org.elasticsearch.indices.recovery.RecoveryTarget;
@@ -115,6 +118,13 @@ public abstract class ESIndexLevelReplicationTestCase extends IndexShardTestCase
     protected final Index index = new Index("test", "uuid");
     private final ShardId shardId = new ShardId(index, 0);
     protected final Map<String, String> indexMapping = Collections.singletonMap("type", "{ \"type\": {} }");
+
+    @Override
+    protected Store createStore(IndexSettings indexSettings, ShardPath shardPath) throws IOException {
+        // Use a plain FSDirectory to avoid MockDirectoryWrapper deadlocks with concurrent recovery under Lucene 9
+        Directory dir = FSDirectory.open(shardPath.resolveIndex());
+        return createStore(shardPath.getShardId(), indexSettings, dir);
+    }
 
     protected ReplicationGroup createGroup(int replicas) throws IOException {
         return createGroup(replicas, Settings.EMPTY);

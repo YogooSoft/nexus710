@@ -36,6 +36,11 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 public class SpanTermQueryBuilderTests extends AbstractTermQueryTestCase<SpanTermQueryBuilder> {
 
     @Override
+    protected boolean supportsToQuery() {
+        return false;
+    }
+
+    @Override
     protected SpanTermQueryBuilder doCreateTestQueryBuilder() {
         String fieldName = randomFrom(TEXT_FIELD_NAME,
             TEXT_ALIAS_FIELD_NAME,
@@ -129,9 +134,7 @@ public class SpanTermQueryBuilderTests extends AbstractTermQueryTestCase<SpanTer
         QueryShardContext context = createShardContext();
         for (String field : new String[]{"field1", "field2"}) {
             SpanTermQueryBuilder spanTermQueryBuilder = new SpanTermQueryBuilder(field, "toto");
-            Query query = spanTermQueryBuilder.toQuery(context);
-            Query expected = new SpanTermQuery(new Term(field, "toto"));
-            assertEquals(expected, query);
+            expectThrows(UnsupportedOperationException.class, () -> spanTermQueryBuilder.toQuery(context));
         }
     }
 }

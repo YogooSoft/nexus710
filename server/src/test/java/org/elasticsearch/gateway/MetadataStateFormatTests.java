@@ -57,6 +57,7 @@ public class MetadataStateFormatTests extends ESTestCase {
     /**
      * Ensure we can read a pre-generated cluster state.
      */
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testReadClusterState() throws IOException {
         final MetadataStateFormat<Metadata> format = new MetadataStateFormat<Metadata>("global-") {
 

@@ -528,7 +528,7 @@ public class InstallPluginCommandTests extends ESTestCase {
     public void testBuiltinXpackModule() throws Exception {
         Tuple<Path, Environment> env = createEnv(fs, temp);
         Path pluginDir = createPluginDir(temp);
-        String pluginZip = createPluginUrl("x-pack", pluginDir);
+        String pluginZip = createPluginUrl("lang-painless", pluginDir);
         UserException e = expectThrows(UserException.class, () -> installPlugin(pluginZip, env.v1()));
         assertTrue(e.getMessage(), e.getMessage().contains("is a system module"));
         assertInstallCleaned(env.v2());
@@ -846,8 +846,8 @@ public class InstallPluginCommandTests extends ESTestCase {
         UserException e = expectThrows(UserException.class, () -> installPlugin("analysis-smartnc", env.v1()));
         assertThat(e.getMessage(), containsString("Unknown plugin analysis-smartnc, did you mean [analysis-smartcn]?"));
 
-        e = expectThrows(UserException.class, () -> installPlugin("repository", env.v1()));
-        assertThat(e.getMessage(), containsString("Unknown plugin repository, did you mean any of [repository-s3, repository-gcs]?"));
+        e = expectThrows(UserException.class, () -> installPlugin("analysis-phonetc", env.v1()));
+        assertThat(e.getMessage(), containsString("Unknown plugin analysis-phonetc, did you mean [analysis-phonetic]?"));
 
         e = expectThrows(UserException.class, () -> installPlugin("unknown_plugin", env.v1()));
         assertThat(e.getMessage(), containsString("Unknown plugin unknown_plugin"));

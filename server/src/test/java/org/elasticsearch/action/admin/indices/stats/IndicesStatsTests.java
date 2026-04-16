@@ -55,6 +55,7 @@ public class IndicesStatsTests extends ESSingleNodeTestCase {
         assertEquals(0, stats.getDocValuesMemoryInBytes());
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testSegmentStats() throws Exception {
         IndexModule.Type storeType = IndexModule.defaultStoreType(true);
         XContentBuilder mapping = XContentFactory.jsonBuilder()

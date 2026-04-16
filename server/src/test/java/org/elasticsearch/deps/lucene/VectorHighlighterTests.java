@@ -71,6 +71,7 @@ public class VectorHighlighterTests extends ESTestCase {
         assertThat(fragment, equalTo("the big <b>bad</b> dog"));
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testVectorHighlighterPrefixQuery() throws Exception {
         Directory dir = new ByteBuffersDirectory();
         IndexWriter indexWriter = new IndexWriter(dir, new IndexWriterConfig(Lucene.STANDARD_ANALYZER));

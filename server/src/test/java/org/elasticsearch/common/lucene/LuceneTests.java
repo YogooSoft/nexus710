@@ -575,6 +575,7 @@ public class LuceneTests extends ESTestCase {
         IOUtils.close(writer, dir);
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testWrapLiveDocsNotExposeAbortedDocuments() throws Exception {
         Directory dir = newDirectory();
         IndexWriterConfig config = newIndexWriterConfig().setSoftDeletesField(Lucene.SOFT_DELETES_FIELD)

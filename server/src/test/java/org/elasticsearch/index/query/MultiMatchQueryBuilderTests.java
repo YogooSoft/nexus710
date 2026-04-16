@@ -51,12 +51,12 @@ import java.util.Map;
 
 import static org.elasticsearch.index.query.QueryBuilders.multiMatchQuery;
 import static org.elasticsearch.test.hamcrest.ElasticsearchAssertions.assertBooleanSubQuery;
-import static org.elasticsearch.test.hamcrest.ElasticsearchAssertions.assertDisjunctionSubQuery;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 public class MultiMatchQueryBuilderTests extends AbstractQueryTestCase<MultiMatchQueryBuilder> {
@@ -214,8 +214,9 @@ public class MultiMatchQueryBuilderTests extends AbstractQueryTestCase<MultiMatc
         DisjunctionMaxQuery dQuery = (DisjunctionMaxQuery) query;
         assertThat(dQuery.getTieBreakerMultiplier(), equalTo(1.0f));
         assertThat(dQuery.getDisjuncts().size(), equalTo(2));
-        assertThat(assertDisjunctionSubQuery(query, TermQuery.class, 0).getTerm(), equalTo(new Term(TEXT_FIELD_NAME, "test")));
-        assertThat(assertDisjunctionSubQuery(query, TermQuery.class, 1).getTerm(), equalTo(new Term(KEYWORD_FIELD_NAME, "test")));
+        List<Term> terms = dQuery.getDisjuncts().stream()
+            .map(q -> ((TermQuery) q).getTerm()).collect(java.util.stream.Collectors.toList());
+        assertThat(terms, containsInAnyOrder(new Term(TEXT_FIELD_NAME, "test"), new Term(KEYWORD_FIELD_NAME, "test")));
     }
 
     public void testToQueryMultipleFieldsDisMaxQuery() throws Exception {
@@ -224,10 +225,11 @@ public class MultiMatchQueryBuilderTests extends AbstractQueryTestCase<MultiMatc
         DisjunctionMaxQuery disMaxQuery = (DisjunctionMaxQuery) query;
         assertThat(disMaxQuery.getTieBreakerMultiplier(), equalTo(0.0f));
         List<Query> disjuncts = new java.util.ArrayList<>(disMaxQuery.getDisjuncts());
-        assertThat(disjuncts.get(0), instanceOf(TermQuery.class));
-        assertThat(((TermQuery) disjuncts.get(0)).getTerm(), equalTo(new Term(TEXT_FIELD_NAME, "test")));
-        assertThat(disjuncts.get(1), instanceOf(TermQuery.class));
-        assertThat(((TermQuery) disjuncts.get(1)).getTerm(), equalTo(new Term(KEYWORD_FIELD_NAME, "test")));
+        assertThat(disjuncts.size(), equalTo(2));
+        List<Term> terms = disjuncts.stream()
+            .map(q -> { assertThat(q, instanceOf(TermQuery.class)); return ((TermQuery) q).getTerm(); })
+            .collect(java.util.stream.Collectors.toList());
+        assertThat(terms, containsInAnyOrder(new Term(TEXT_FIELD_NAME, "test"), new Term(KEYWORD_FIELD_NAME, "test")));
     }
 
     public void testToQueryFieldsWildcard() throws Exception {
@@ -236,8 +238,9 @@ public class MultiMatchQueryBuilderTests extends AbstractQueryTestCase<MultiMatc
         DisjunctionMaxQuery dQuery = (DisjunctionMaxQuery) query;
         assertThat(dQuery.getTieBreakerMultiplier(), equalTo(1.0f));
         assertThat(dQuery.getDisjuncts().size(), equalTo(2));
-        assertThat(assertDisjunctionSubQuery(query, TermQuery.class, 0).getTerm(), equalTo(new Term(TEXT_FIELD_NAME, "test")));
-        assertThat(assertDisjunctionSubQuery(query, TermQuery.class, 1).getTerm(), equalTo(new Term(KEYWORD_FIELD_NAME, "test")));
+        List<Term> terms = dQuery.getDisjuncts().stream()
+            .map(q -> ((TermQuery) q).getTerm()).collect(java.util.stream.Collectors.toList());
+        assertThat(terms, containsInAnyOrder(new Term(TEXT_FIELD_NAME, "test"), new Term(KEYWORD_FIELD_NAME, "test")));
     }
 
     public void testToQueryFieldMissing() throws Exception {
@@ -266,11 +269,21 @@ public class MultiMatchQueryBuilderTests extends AbstractQueryTestCase<MultiMatc
             assertThat(query, instanceOf(DisjunctionMaxQuery.class));
             final DisjunctionMaxQuery disMaxQuery = (DisjunctionMaxQuery) query;
             assertThat(disMaxQuery.getDisjuncts(), hasSize(2));
-            final BooleanQuery firstDisjunct = assertDisjunctionSubQuery(disMaxQuery, BooleanQuery.class, 0);
-            assertThat(firstDisjunct.clauses(), hasSize(2));
-            assertThat(assertBooleanSubQuery(firstDisjunct, TermQuery.class, 0).getTerm(), equalTo(new Term(TEXT_FIELD_NAME, "foo")));
-            final PrefixQuery secondDisjunct = assertDisjunctionSubQuery(disMaxQuery, PrefixQuery.class, 1);
-            assertThat(secondDisjunct.getPrefix(), equalTo(new Term(KEYWORD_FIELD_NAME, "foo bar")));
+            List<Query> disjuncts = new java.util.ArrayList<>(disMaxQuery.getDisjuncts());
+            BooleanQuery boolDisjunct = null;
+            PrefixQuery prefixDisjunct = null;
+            for (Query d : disjuncts) {
+                if (d instanceof BooleanQuery) {
+                    boolDisjunct = (BooleanQuery) d;
+                } else if (d instanceof PrefixQuery) {
+                    prefixDisjunct = (PrefixQuery) d;
+                }
+            }
+            assertNotNull("Expected a BooleanQuery disjunct", boolDisjunct);
+            assertNotNull("Expected a PrefixQuery disjunct", prefixDisjunct);
+            assertThat(boolDisjunct.clauses(), hasSize(2));
+            assertThat(assertBooleanSubQuery(boolDisjunct, TermQuery.class, 0).getTerm(), equalTo(new Term(TEXT_FIELD_NAME, "foo")));
+            assertThat(prefixDisjunct.getPrefix(), equalTo(new Term(KEYWORD_FIELD_NAME, "foo bar")));
         }
     }
 

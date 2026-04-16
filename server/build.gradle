@@ -165,7 +165,6 @@ sourceSets.test.java {
     exclude '**/LegacyGeoShapeFieldMapperTests.java'
 }
 
-
 tasks.named("testingConventions").configure {
     naming.clear()
     naming {

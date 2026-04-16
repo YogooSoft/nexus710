@@ -103,9 +103,12 @@ public class ElasticsearchTestBasePlugin implements Plugin<Project> {
                             "--add-opens=java.base/java.util=ALL-UNNAMED",
                             "--add-opens=java.base/java.io=ALL-UNNAMED",
                             "--add-opens=java.base/java.nio=ALL-UNNAMED",
+                            "--add-opens=java.base/java.nio.channels=ALL-UNNAMED",
+                            "--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED",
                             "--add-opens=java.base/java.nio.file=ALL-UNNAMED",
                             "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
-                            "--add-opens=java.base/java.net=ALL-UNNAMED"
+                            "--add-opens=java.base/java.net=ALL-UNNAMED",
+                            "--add-opens=java.base/java.security.cert=ALL-UNNAMED"
                         );
                     }
                 }

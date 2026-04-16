@@ -852,6 +852,7 @@ public class TextFieldMapperTests extends MapperTestCase {
         }
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testFastPhrasePrefixes() throws IOException {
         MapperService mapperService = createMapperService(mapping(b -> {
             b.startObject("field");

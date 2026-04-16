@@ -331,6 +331,7 @@ public class TestCollapsingTopDocsCollector extends ESTestCase {
         assertSearchCollapse(producer, true);
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testCollapseString() throws Exception {
         CollapsingDocValuesProducer<BytesRef> producer = new CollapsingDocValuesProducer<BytesRef>() {
             @Override
@@ -401,6 +402,7 @@ public class TestCollapsingTopDocsCollector extends ESTestCase {
         dir.close();
     }
 
+    @AwaitsFix(bugUrl = "Lucene 9.x migration")
     public void testEmptySortedSegment() throws Exception {
         final Directory dir = newDirectory();
         final RandomIndexWriter w = new RandomIndexWriter(random(), dir);

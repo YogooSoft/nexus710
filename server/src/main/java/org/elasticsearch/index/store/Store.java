@@ -37,7 +37,6 @@ import org.apache.lucene.index.SegmentCommitInfo;
 import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.BufferedChecksum;
-import org.apache.lucene.store.ByteArrayDataInput;
 import org.apache.lucene.store.ChecksumIndexInput;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FilterDirectory;
@@ -60,7 +59,6 @@ import org.elasticsearch.common.io.stream.StreamOutput;
 import org.elasticsearch.common.io.stream.Writeable;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.lucene.Lucene;
-import org.elasticsearch.common.lucene.store.ByteArrayIndexInput;
 import org.elasticsearch.common.lucene.store.InputStreamIndexInput;
 import org.elasticsearch.common.settings.Setting;
 import org.elasticsearch.common.settings.Setting.Property;
@@ -911,10 +909,8 @@ public class Store extends AbstractIndexShardComponent implements Closeable, Ref
                             CodecUtil.footerLength() + " but was: " + in.length(), in);
                     }
                     if (readFileAsHash) {
-                        // additional safety we checksum the entire file we read the hash for...
-                        final VerifyingIndexInput verifyingIndexInput = new VerifyingIndexInput(in);
-                        hashFile(fileHash, new InputStreamIndexInput(verifyingIndexInput, length), length);
-                        checksum = digestToString(verifyingIndexInput.verify());
+                        hashFile(fileHash, new InputStreamIndexInput(in, length), length);
+                        checksum = digestToString(CodecUtil.checksumEntireFile(in));
                     } else {
                         checksum = digestToString(CodecUtil.retrieveChecksum(in));
                     }
@@ -1176,8 +1172,17 @@ public class Store extends AbstractIndexShardComponent implements Closeable, Ref
         public void verify() throws IOException {
             String footerDigest = null;
             if (metadata.checksum().equals(actualChecksum) && writtenBytes == metadata.length()) {
-                ByteArrayIndexInput indexInput = new ByteArrayIndexInput("checksum", this.footerChecksum);
-                footerDigest = digestToString(indexInput.readLong());
+                // Lucene 9 writes the footer checksum as big-endian via CodecUtil.writeBELong,
+                // but DataInput.readLong() is now little-endian, so decode manually as big-endian.
+                long storedCRC = ((footerChecksum[0] & 0xFFL) << 56)
+                              | ((footerChecksum[1] & 0xFFL) << 48)
+                              | ((footerChecksum[2] & 0xFFL) << 40)
+                              | ((footerChecksum[3] & 0xFFL) << 32)
+                              | ((footerChecksum[4] & 0xFFL) << 24)
+                              | ((footerChecksum[5] & 0xFFL) << 16)
+                              | ((footerChecksum[6] & 0xFFL) << 8)
+                              | (footerChecksum[7] & 0xFFL);
+                footerDigest = digestToString(storedCRC);
                 if (metadata.checksum().equals(footerDigest)) {
                     return;
                 }
@@ -1349,7 +1354,16 @@ public class Store extends AbstractIndexShardComponent implements Closeable, Ref
         }
 
         public long getStoredChecksum() {
-            return new ByteArrayDataInput(checksum).readLong();
+            // Lucene 9 writes the footer checksum as big-endian via CodecUtil.writeBELong,
+            // but DataInput.readLong() is now little-endian, so decode manually as big-endian.
+            return ((checksum[0] & 0xFFL) << 56)
+                 | ((checksum[1] & 0xFFL) << 48)
+                 | ((checksum[2] & 0xFFL) << 40)
+                 | ((checksum[3] & 0xFFL) << 32)
+                 | ((checksum[4] & 0xFFL) << 24)
+                 | ((checksum[5] & 0xFFL) << 16)
+                 | ((checksum[6] & 0xFFL) << 8)
+                 | (checksum[7] & 0xFFL);
         }
 
         public long verify() throws CorruptIndexException {
@@ -1619,9 +1633,10 @@ public class Store extends AbstractIndexShardComponent implements Closeable, Ref
     }
 
     private static IndexWriter newEmptyIndexWriter(final Directory dir, final Version luceneVersion) throws IOException {
+        int createdMajor = Math.max(luceneVersion.major, Version.LATEST.major - 1);
         IndexWriterConfig iwc = newIndexWriterConfig()
             .setOpenMode(IndexWriterConfig.OpenMode.CREATE)
-            .setIndexCreatedVersionMajor(luceneVersion.major);
+            .setIndexCreatedVersionMajor(createdMajor);
         return new IndexWriter(dir, iwc);
     }
 
