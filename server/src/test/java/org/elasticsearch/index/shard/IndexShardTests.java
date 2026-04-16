@@ -1448,8 +1448,10 @@ public class IndexShardTests extends IndexShardTestCase {
         recoverShardFromStore(test);
 
         indexDoc(test, "_doc", "test");
+        test.refresh("test");
         assertEquals(Version.CURRENT.luceneVersion, test.minimumCompatibleVersion());
         indexDoc(test, "_doc", "test");
+        test.refresh("test");
         assertEquals(Version.CURRENT.luceneVersion, test.minimumCompatibleVersion());
         test.getEngine().flush();
         assertEquals(Version.CURRENT.luceneVersion, test.minimumCompatibleVersion());

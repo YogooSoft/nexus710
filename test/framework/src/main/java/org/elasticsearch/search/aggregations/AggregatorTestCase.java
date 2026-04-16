@@ -171,6 +171,7 @@ public abstract class AggregatorTestCase extends ESTestCase {
         blacklist.add(ObjectMapper.NESTED_CONTENT_TYPE); // TODO support for nested
         blacklist.add(CompletionFieldMapper.CONTENT_TYPE); // TODO support completion
         blacklist.add(FieldAliasMapper.CONTENT_TYPE); // TODO support alias
+        blacklist.add("nexus_vector");
         TYPE_TEST_BLACKLIST = blacklist;
     }
 
